@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, useMapEvents, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Box, Button } from '@mui/material';
 import L, { marker } from 'leaflet';
+import axiosInstance from '../../Axios';
 
 // Define bounds for Ukraine (approximate)
 const ukraineBounds = [
@@ -49,6 +50,25 @@ const MapPage = () => {
     }
   };
 
+  const getShortestPath = async () => {
+    try {
+      if (markers.length === 0) {
+        console.log('No markers to send.');
+        return;
+      }
+      const data = {
+        start_point: [markers[0].lat, markers[0].lng],
+        end_point: [markers[1].lat, markers[1].lng],
+      };
+      console.log('Sending coordinates:', data);
+
+      const response = await axiosInstance.post('/shortest_path', data);
+      console.log('Backend response:', response.data);
+    } catch (error) {
+      console.error('Error sending coordinates:', error);
+    }
+  };
+
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Map Container */}
@@ -75,7 +95,7 @@ const MapPage = () => {
       </Box>
       {/* Button to log coordinates */}
       <Box sx={{ p: 2, textAlign: 'center' }}>
-        <Button variant="contained" onClick={logCoordinates}>
+        <Button variant="contained" onClick={getShortestPath}>
           Log Marker Coordinates
         </Button>
       </Box>
