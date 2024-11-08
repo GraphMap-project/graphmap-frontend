@@ -13,7 +13,7 @@ const Footer = () => {
         textAlign: 'center',
       }}
     >
-      <Typography variant="body1">© 2024 My App</Typography>
+      <Typography variant="body1">© 2024 GraphMap</Typography>
       <Typography variant="body2">All rights reserved</Typography>
     </Box>
   );

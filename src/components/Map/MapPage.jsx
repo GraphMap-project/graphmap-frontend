@@ -3,11 +3,26 @@ import { MapContainer, TileLayer, useMapEvents, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Box, Button } from '@mui/material';
 import L from 'leaflet';
+import redMarker from '../../assets/markers/marker_red.png';
+import blueMarker from '../../assets/markers/marker_blue.png';
 
-const customIcon = new L.Icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-  iconSize: [25, 41],
+const ukraineBounds = [
+  [44.0, 22.0], // Southwest corner (latitude, longitude)
+  [52.5, 40.2], // Northeast corner (latitude, longitude)
+];
+
+const startIcon = new L.Icon({
+  iconUrl: blueMarker,
+  // iconSize: [25, 41],
   iconAnchor: [12, 41],
+  popupAnchor: [0, -41],
+});
+
+const endIcon = new L.Icon({
+  iconUrl: redMarker,
+  // iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [0, -41],
 });
 
 const AddMarker = ({ onAddMarker }) => {
@@ -55,10 +70,15 @@ const MapPage = () => {
   const handleAddMarker = latlng => {
     if (markers.length < 2) {
       setMarkers([...markers, latlng]);
-    } else {
-      // Если уже два маркера, заменяем самый старый
-      setMarkers([markers[1], latlng]);
     }
+    // } else {
+    //   // Если уже два маркера, заменяем самый старый
+    //   setMarkers([markers[1], latlng]);
+    // }
+  };
+
+  const clearMarkers = () => {
+    setMarkers([]);
   };
 
   const getShortestPath = async () => {
@@ -81,13 +101,16 @@ const MapPage = () => {
   };
 
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ height: '90vh', display: 'flex', flexDirection: 'column' }}>
       {/* Map Container */}
       <Box sx={{ flex: 1 }}>
         <MapContainer
           center={[48.3794, 31.1656]} // Centered on Ukraine
           zoom={6}
           style={{ height: '100%', width: '100%' }}
+          maxBounds={ukraineBounds} // Set the bounds to Ukraine's area
+          maxBoundsViscosity={1.0}
+          minZoom={6}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -96,15 +119,30 @@ const MapPage = () => {
           <AddMarker onAddMarker={handleAddMarker} />
           {/* Render markers */}
           {markers.map((position, index) => (
-            <Marker key={index} position={position} icon={customIcon} />
+            <Marker
+              key={index}
+              position={position}
+              icon={index === 0 ? startIcon : endIcon} // Используем разные иконки для начальной и конечной точки
+            />
           ))}
         </MapContainer>
       </Box>
 
       {/* Button to log coordinates */}
-      <Box sx={{ p: 2, textAlign: 'center' }}>
+      <Box
+        sx={{
+          p: 2,
+          textAlign: 'center',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: 2,
+        }}
+      >
         <Button variant="contained" onClick={getShortestPath}>
           Log Marker Coordinates
+        </Button>
+        <Button variant="contained" onClick={clearMarkers}>
+          Clear Markers
         </Button>
       </Box>
     </Box>
