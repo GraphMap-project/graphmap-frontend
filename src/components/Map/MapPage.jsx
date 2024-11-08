@@ -2,14 +2,7 @@ import React, { useState } from 'react';
 import { MapContainer, TileLayer, useMapEvents, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Box, Button } from '@mui/material';
-import L, { marker } from 'leaflet';
-import axiosInstance from '../../Axios';
-
-// Define bounds for Ukraine (approximate)
-const ukraineBounds = [
-  [44.0, 22.0], // Southwest corner (latitude, longitude)
-  [52.5, 40.2], // Northeast corner (latitude, longitude)
-];
+import L from 'leaflet';
 
 const customIcon = new L.Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
@@ -18,11 +11,41 @@ const customIcon = new L.Icon({
 });
 
 const AddMarker = ({ onAddMarker }) => {
-  useMapEvents({
-    click(e) {
-      onAddMarker(e.latlng);
+  const map = useMapEvents({
+    async click(e) {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+
+      // Проверка, что клик внутри Украины через API Nominatim
+      const isInsideUkraine = await checkIfInsideUkraine(lat, lng);
+
+      if (isInsideUkraine) {
+        onAddMarker(e.latlng);
+      } else {
+        // Показывать alert, если клик за пределами Украины
+        alert('Please place the marker within the borders of Ukraine.');
+      }
     },
   });
+
+  // Функция для проверки, находится ли точка в Украине
+  const checkIfInsideUkraine = async (lat, lng) => {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      const country_code = data?.address?.country_code;
+
+      console.log(data);
+
+      return country_code === 'ua';
+    } catch (error) {
+      console.error('Error checking location:', error);
+      return false;
+    }
+  };
+
   return null;
 };
 
@@ -33,20 +56,8 @@ const MapPage = () => {
     if (markers.length < 2) {
       setMarkers([...markers, latlng]);
     } else {
-      // If two markers already exist, replace the oldest one
+      // Если уже два маркера, заменяем самый старый
       setMarkers([markers[1], latlng]);
-    }
-  };
-
-  const logCoordinates = () => {
-    if (markers.length === 0) {
-      console.log('No markers added.');
-    } else {
-      markers.forEach((marker, index) => {
-        console.log(
-          `Marker ${index + 1}: Latitude: ${marker.lat}, Longitude: ${marker.lng}`,
-        );
-      });
     }
   };
 
@@ -56,14 +67,14 @@ const MapPage = () => {
         console.log('No markers to send.');
         return;
       }
+
       const data = {
         start_point: [markers[0].lat, markers[0].lng],
         end_point: [markers[1].lat, markers[1].lng],
       };
-      console.log('Sending coordinates:', data);
 
-      const response = await axiosInstance.post('/shortest_path', data);
-      console.log('Backend response:', response.data);
+      console.log('Sending coordinates:', data);
+      // Сделать API вызов для получения кратчайшего пути
     } catch (error) {
       console.error('Error sending coordinates:', error);
     }
@@ -77,22 +88,19 @@ const MapPage = () => {
           center={[48.3794, 31.1656]} // Centered on Ukraine
           zoom={6}
           style={{ height: '100%', width: '100%' }}
-          maxBounds={ukraineBounds} // Set the bounds to Ukraine's area
-          maxBoundsViscosity={1.0} // Prevents panning outside Ukraine
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
           />
-
           <AddMarker onAddMarker={handleAddMarker} />
-
           {/* Render markers */}
           {markers.map((position, index) => (
             <Marker key={index} position={position} icon={customIcon} />
           ))}
         </MapContainer>
       </Box>
+
       {/* Button to log coordinates */}
       <Box sx={{ p: 2, textAlign: 'center' }}>
         <Button variant="contained" onClick={getShortestPath}>
