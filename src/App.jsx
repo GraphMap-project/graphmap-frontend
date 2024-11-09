@@ -1,6 +1,5 @@
-import './App.css';
 import { MapPage } from './components/Map';
-import { Header, Footer } from './components/ui';
+import { Footer, Header } from './components/ui';
 
 function App() {
   return (

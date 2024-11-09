@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, useMapEvents, Marker } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import { Box, Button, Typography, TextField } from '@mui/material';
+import { useState } from 'react';
+
+import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
+
+import { Box, Button } from '@mui/material';
 import L from 'leaflet';
+
+import { useAppContext } from '@/core/context/AppContext';
+
 import axiosInstance from '../../Axios';
-import redMarker from '../../assets/markers/marker_red.png';
 import blueMarker from '../../assets/markers/marker_blue.png';
+import redMarker from '../../assets/markers/marker_red.png';
+import { SideMenu } from '../SideMenu/SideMenu';
+
+import 'leaflet/dist/leaflet.css';
 
 const ukraineBounds = [
   [44.0, 22.0], // Southwest corner (latitude, longitude)
@@ -27,6 +34,7 @@ const endIcon = new L.Icon({
 });
 
 const AddMarker = ({ onAddMarker }) => {
+  // eslint-disable-next-line no-unused-vars
   const map = useMapEvents({
     async click(e) {
       const lat = e.latlng.lat;
@@ -64,8 +72,8 @@ const AddMarker = ({ onAddMarker }) => {
 };
 
 const MapPage = () => {
+  const { coords, setStartCoords, setEndCoords, clearCoords } = useAppContext();
   const [markers, setMarkers] = useState([]);
-  const [coordinates, setCoordinates] = useState({ start: '', end: '' });
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleAddMarker = latlng => {
@@ -78,23 +86,16 @@ const MapPage = () => {
     //   // Если уже два маркера, заменяем самый старый
     //   setMarkers([markers[1], latlng]);
     // }
-
     if (newMarkers.length === 1) {
-      setCoordinates(prev => ({
-        ...prev,
-        start: `${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}`,
-      }));
+      setStartCoords(latlng);
     } else if (newMarkers.length === 2) {
-      setCoordinates(prev => ({
-        ...prev,
-        end: `${latlng.lat.toFixed(4)}, ${latlng.lng.toFixed(4)}`,
-      }));
+      setEndCoords(latlng);
     }
   };
 
   const clearMarkers = () => {
     setMarkers([]);
-    setCoordinates({ start: '', end: '' });
+    clearCoords();
   };
 
   const getShortestPath = async () => {
@@ -127,56 +128,7 @@ const MapPage = () => {
         position: 'relative',
       }}
     >
-      {/* Кастомное выдвигающееся меню */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '250px', // Меняем ширину для анимации
-          backgroundColor: 'white',
-          overflowX: 'hidden',
-          transition: 'transform 0.3s ease', // Плавная анимация
-          transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
-          boxShadow: sidebarOpen ? '2px 0 5px rgba(0,0,0,0.2)' : 'none',
-          zIndex: 1000,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2,
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between', // Располагает элементы по краям
-            alignItems: 'center', // Выравнивание по вертикали
-            width: '100%', // Чтобы контейнер растягивался на всю ширину
-            mb: 2,
-          }}
-        >
-          <Typography variant="h6">Меню</Typography>
-          <Button onClick={() => setSidebarOpen(false)}> {'<<'} </Button>
-        </Box>
-
-        {/* Текстовые поля для координат */}
-        <TextField
-          label="Начальная точка (широта, долгота)"
-          value={coordinates.start}
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          disabled
-        />
-        <TextField
-          label="Конечная точка (широта, долгота)"
-          value={coordinates.end}
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          disabled
-        />
-      </Box>
-
+      <SideMenu open={sidebarOpen} setOpen={setSidebarOpen} coordinates={coords} />
       <Box
         sx={{
           flex: 1,
