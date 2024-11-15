@@ -128,7 +128,17 @@ const MapPage = () => {
         position: 'relative',
       }}
     >
-      <SideMenu open={sidebarOpen} setOpen={setSidebarOpen} coordinates={coords} />
+      <SideMenu open={sidebarOpen} setOpen={setSidebarOpen} coordinates={coords}>
+        <Button variant="contained" onClick={() => setSidebarOpen(true)}>
+          Открыть меню
+        </Button>
+        <Button variant="contained" onClick={getShortestPath}>
+          Log Marker Coordinates
+        </Button>
+        <Button variant="contained" onClick={clearMarkers}>
+          Clear Markers
+        </Button>
+      </SideMenu>
       <Box
         sx={{
           flex: 1,
@@ -157,26 +167,6 @@ const MapPage = () => {
             />
           ))}
         </MapContainer>
-      </Box>
-
-      <Box
-        sx={{
-          p: 2,
-          textAlign: 'center',
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 2,
-        }}
-      >
-        <Button variant="contained" onClick={() => setSidebarOpen(true)}>
-          Открыть меню
-        </Button>
-        <Button variant="contained" onClick={getShortestPath}>
-          Log Marker Coordinates
-        </Button>
-        <Button variant="contained" onClick={clearMarkers}>
-          Clear Markers
-        </Button>
       </Box>
     </Box>
   );

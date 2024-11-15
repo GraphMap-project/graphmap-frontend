@@ -2,7 +2,7 @@ import { Box, Button, TextField, Typography } from '@mui/material';
 
 import { cn } from '@/core/utils';
 
-export const SideMenu = ({ open, setOpen, coordinates }) => {
+export const SideMenu = ({ open, setOpen, coordinates, children }) => {
   return (
     <>
       <Box
@@ -44,6 +44,7 @@ export const SideMenu = ({ open, setOpen, coordinates }) => {
           margin="normal"
           disabled
         />
+        {children}
       </Box>
     </>
   );
