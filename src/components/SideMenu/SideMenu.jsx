@@ -1,13 +1,13 @@
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { Box, TextField, Typography } from '@mui/material';
 
 import { cn } from '@/core/utils';
 
-export const SideMenu = ({ open, setOpen, coordinates, children }) => {
+export const SideMenu = ({ open, coordinates, intermediatePoints, children }) => {
   return (
     <>
       <Box
         className={cn(
-          'flex flex-col gap-1 absolute top-0 left-0 w-[250px] bg-white overflow-hidden transition-transform z-50',
+          'flex flex-col gap-1 absolute top-0 left-0 w-[250px] h-full bg-white overflow-hidden transition-transform z-50',
           {
             'translate-x-0': open,
             '-translate-x-full': !open,
@@ -24,7 +24,6 @@ export const SideMenu = ({ open, setOpen, coordinates, children }) => {
           }}
         >
           <Typography variant="h6">Меню</Typography>
-          <Button onClick={() => setOpen(false)}> {'<<'} </Button>
         </Box>
 
         {/* Текстовые поля для координат */}
@@ -36,6 +35,19 @@ export const SideMenu = ({ open, setOpen, coordinates, children }) => {
           margin="normal"
           disabled
         />
+
+        {intermediatePoints.map((point, index) => (
+          <TextField
+            key={index}
+            label={`Промежуточная точка ${index + 1} (широта, долгота)`}
+            value={`${point.lat}, ${point.lng}`}
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            disabled
+          />
+        ))}
+
         <TextField
           label="Конечная точка (широта, долгота)"
           value={coordinates.end}

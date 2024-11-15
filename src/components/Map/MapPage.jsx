@@ -9,6 +9,7 @@ import { useAppContext } from '@/core/context/AppContext';
 
 import axiosInstance from '../../Axios';
 import blueMarker from '../../assets/markers/marker_blue.png';
+import intermediateMarker from '../../assets/markers/marker_intermediate.png';
 import redMarker from '../../assets/markers/marker_red.png';
 import { SideMenu } from '../SideMenu/SideMenu';
 
@@ -22,15 +23,20 @@ const ukraineBounds = [
 const startIcon = new L.Icon({
   iconUrl: blueMarker,
   // iconSize: [25, 41],
-  iconAnchor: [12, 41],
+  iconAnchor: [25, 50],
   popupAnchor: [0, -41],
 });
 
 const endIcon = new L.Icon({
   iconUrl: redMarker,
   // iconSize: [25, 41],
-  iconAnchor: [12, 41],
+  iconAnchor: [25, 50],
   popupAnchor: [0, -41],
+});
+
+const intermediateIcon = new L.Icon({
+  iconUrl: intermediateMarker,
+  iconAnchor: [15, 30],
 });
 
 const AddMarker = ({ onAddMarker }) => {
@@ -75,27 +81,47 @@ const MapPage = () => {
   const { coords, setStartCoords, setEndCoords, clearCoords } = useAppContext();
   const [markers, setMarkers] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [intermediatePoints, setIntermediatePoints] = useState([]);
 
   const handleAddMarker = latlng => {
+    console.log(`Начало метода: `, markers);
     const newMarkers = [...markers, latlng];
+    console.log(`newMarkers: `, newMarkers);
 
     if (markers.length < 2) {
       setMarkers(newMarkers);
     }
-    // } else {
-    //   // Если уже два маркера, заменяем самый старый
-    //   setMarkers([markers[1], latlng]);
-    // }
+
     if (newMarkers.length === 1) {
       setStartCoords(latlng);
+      setSidebarOpen(true);
     } else if (newMarkers.length === 2) {
       setEndCoords(latlng);
+    } else {
+      // Если есть промежуточная точка без координат, заполняем её
+      const emptyIndex = intermediatePoints.findIndex(point => !point.lat && !point.lng);
+      if (emptyIndex !== -1) {
+        const updatedPoints = [...intermediatePoints];
+        updatedPoints[emptyIndex] = latlng;
+        setIntermediatePoints(updatedPoints);
+      }
+    }
+    console.log(`Конец метода: `, markers);
+  };
+
+  const addIntermediatePoint = () => {
+    // Проверяем, есть ли уже пустая промежуточная точка
+    const hasEmptyPoint = intermediatePoints.some(point => !point.lat && !point.lng);
+    if (!hasEmptyPoint) {
+      setIntermediatePoints([...intermediatePoints, { lat: '', lng: '' }]);
     }
   };
 
   const clearMarkers = () => {
     setMarkers([]);
     clearCoords();
+    setSidebarOpen(false);
+    setIntermediatePoints([]);
   };
 
   const getShortestPath = async () => {
@@ -107,6 +133,7 @@ const MapPage = () => {
 
       const data = {
         start_point: [markers[0].lat, markers[0].lng],
+        intermediate_points: intermediatePoints.map(point => [point.lat, point.lng]),
         end_point: [markers[1].lat, markers[1].lng],
       };
 
@@ -128,9 +155,14 @@ const MapPage = () => {
         position: 'relative',
       }}
     >
-      <SideMenu open={sidebarOpen} setOpen={setSidebarOpen} coordinates={coords}>
-        <Button variant="contained" onClick={() => setSidebarOpen(true)}>
-          Открыть меню
+      <SideMenu
+        open={sidebarOpen}
+        setOpen={setSidebarOpen}
+        coordinates={coords}
+        intermediatePoints={intermediatePoints}
+      >
+        <Button variant="contained" onClick={addIntermediatePoint}>
+          + Додати проміжну точку
         </Button>
         <Button variant="contained" onClick={getShortestPath}>
           Log Marker Coordinates
@@ -159,6 +191,7 @@ const MapPage = () => {
             attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
           />
           <AddMarker onAddMarker={handleAddMarker} />
+
           {markers.map((position, index) => (
             <Marker
               key={index}
@@ -166,6 +199,19 @@ const MapPage = () => {
               icon={index === 0 ? startIcon : endIcon}
             />
           ))}
+
+          {/* Промежуточные маркеры */}
+          {intermediatePoints.map(
+            (point, index) =>
+              point.lat &&
+              point.lng && (
+                <Marker
+                  key={`intermediate-${index}`}
+                  position={point}
+                  icon={intermediateIcon}
+                />
+              ),
+          )}
         </MapContainer>
       </Box>
     </Box>
