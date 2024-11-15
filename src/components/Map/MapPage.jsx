@@ -84,9 +84,7 @@ const MapPage = () => {
   const [intermediatePoints, setIntermediatePoints] = useState([]);
 
   const handleAddMarker = latlng => {
-    console.log(`Начало метода: `, markers);
     const newMarkers = [...markers, latlng];
-    console.log(`newMarkers: `, newMarkers);
 
     if (markers.length < 2) {
       setMarkers(newMarkers);
@@ -106,7 +104,6 @@ const MapPage = () => {
         setIntermediatePoints(updatedPoints);
       }
     }
-    console.log(`Конец метода: `, markers);
   };
 
   const addIntermediatePoint = () => {
