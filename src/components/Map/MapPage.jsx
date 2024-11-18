@@ -6,10 +6,10 @@ import AddIcon from '@mui/icons-material/Add';
 import { Box, Button, IconButton, Typography } from '@mui/material';
 import L from 'leaflet';
 
+import { axiosInstance } from '@/core/api';
 import { useAppContext } from '@/core/context/AppContext';
 import { cn } from '@/core/utils';
 
-import axiosInstance from '../../Axios';
 import blueMarker from '../../assets/markers/marker_blue.png';
 import intermediateMarker from '../../assets/markers/marker_intermediate.png';
 import redMarker from '../../assets/markers/marker_red.png';
@@ -155,12 +155,12 @@ const MapPage = () => {
       >
         <IconButton aria-label="addPoint" onClick={addIntermediatePoint}>
           <AddIcon />
-          <Typography className="text-blue-400">Додати проміжну точку</Typography>
+          <Typography className="text-primary">Додати проміжну точку</Typography>
         </IconButton>
-        <Button variant="contained" onClick={getShortestPath}>
+        <Button variant="contained" onClick={getShortestPath} className="bg-primary">
           Побудувати маршрут
         </Button>
-        <Button variant="contained" onClick={clearMarkers}>
+        <Button variant="contained" onClick={clearMarkers} className="bg-primary">
           Очистити маркери
         </Button>
       </SideMenu>
