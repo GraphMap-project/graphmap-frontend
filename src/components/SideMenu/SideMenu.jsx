@@ -7,28 +7,20 @@ export const SideMenu = ({ open, coordinates, intermediatePoints, children }) =>
     <>
       <Box
         className={cn(
-          'flex flex-col gap-1 absolute top-0 left-0 w-[250px] h-full bg-white overflow-hidden transition-transform z-50',
+          'flex flex-col gap-1 absolute top-0 left-0 w-[250px] h-full p-2 bg-white overflow-hidden transition-transform z-50',
           {
             'translate-x-0': open,
             '-translate-x-full': !open,
           },
         )}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between', // Располагает элементы по краям
-            alignItems: 'center', // Выравнивание по вертикали
-            width: '100%', // Чтобы контейнер растягивался на всю ширину
-            mb: 2,
-          }}
-        >
+        <Box className="flex justify-between items-center w-full mb-[2px]">
           <Typography variant="h6">Меню</Typography>
         </Box>
 
         {/* Текстовые поля для координат */}
         <TextField
-          label="Начальная точка (широта, долгота)"
+          label="Початкова точка (широта, довгота)"
           value={coordinates.start}
           variant="outlined"
           fullWidth
@@ -39,7 +31,7 @@ export const SideMenu = ({ open, coordinates, intermediatePoints, children }) =>
         {intermediatePoints.map((point, index) => (
           <TextField
             key={index}
-            label={`Промежуточная точка ${index + 1} (широта, долгота)`}
+            label={`Проміжна точка ${index + 1} (широта, довгота)`}
             value={`${point.lat}, ${point.lng}`}
             variant="outlined"
             fullWidth
@@ -49,7 +41,7 @@ export const SideMenu = ({ open, coordinates, intermediatePoints, children }) =>
         ))}
 
         <TextField
-          label="Конечная точка (широта, долгота)"
+          label="Кінцева точка (широта, довгота)"
           value={coordinates.end}
           variant="outlined"
           fullWidth

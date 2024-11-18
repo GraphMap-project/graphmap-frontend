@@ -1,24 +1,13 @@
-import React from 'react';
-import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import { AppBar, Box, Toolbar, Typography } from '@mui/material';
 
 const Header = () => {
   return (
     <AppBar position="static" color="primary">
       <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+        <Typography variant="h6" component="div" className="grow">
           GraphMap
         </Typography>
-        <Box>
-          <Button color="inherit" href="#home">
-            Home
-          </Button>
-          <Button color="inherit" href="#about">
-            About
-          </Button>
-          <Button color="inherit" href="#contact">
-            Contact
-          </Button>
-        </Box>
+        <Box></Box>
       </Toolbar>
     </AppBar>
   );

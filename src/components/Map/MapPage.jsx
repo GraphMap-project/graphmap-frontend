@@ -2,10 +2,12 @@ import { useState } from 'react';
 
 import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
 
-import { Box, Button } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { Box, Button, IconButton, Typography } from '@mui/material';
 import L from 'leaflet';
 
 import { useAppContext } from '@/core/context/AppContext';
+import { cn } from '@/core/utils';
 
 import axiosInstance from '../../Axios';
 import blueMarker from '../../assets/markers/marker_blue.png';
@@ -144,36 +146,29 @@ const MapPage = () => {
   };
 
   return (
-    <Box
-      sx={{
-        height: '90vh',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-      }}
-    >
+    <Box className="flex h-[90vh] flex-col relative">
       <SideMenu
         open={sidebarOpen}
         setOpen={setSidebarOpen}
         coordinates={coords}
         intermediatePoints={intermediatePoints}
       >
-        <Button variant="contained" onClick={addIntermediatePoint}>
-          + Додати проміжну точку
-        </Button>
+        <IconButton aria-label="addPoint" onClick={addIntermediatePoint}>
+          <AddIcon />
+          <Typography className="text-blue-400">Додати проміжну точку</Typography>
+        </IconButton>
         <Button variant="contained" onClick={getShortestPath}>
-          Log Marker Coordinates
+          Побудувати маршрут
         </Button>
         <Button variant="contained" onClick={clearMarkers}>
-          Clear Markers
+          Очистити маркери
         </Button>
       </SideMenu>
       <Box
-        sx={{
-          flex: 1,
-          transition: 'margin-left 0.3s ease',
-          marginLeft: sidebarOpen ? '250px' : '0',
-        }}
+        className={cn(
+          'flex-1 transition-all duration-300',
+          sidebarOpen ? 'ml-[250px]' : 'ml-0',
+        )}
       >
         <MapContainer
           center={[48.3794, 31.1656]}
