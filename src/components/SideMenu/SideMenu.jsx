@@ -19,35 +19,38 @@ export const SideMenu = ({ open, coordinates, intermediatePoints, children }) =>
         </Box>
 
         {/* Текстовые поля для координат */}
-        <TextField
-          label="Початкова точка (широта, довгота)"
-          value={coordinates.start}
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          disabled
-        />
-
-        {intermediatePoints.map((point, index) => (
+        <Box className="flex-1 overflow-y-auto">
           <TextField
-            key={index}
-            label={`Проміжна точка ${index + 1} (широта, довгота)`}
-            value={`${point.lat}, ${point.lng}`}
+            label="Початкова точка (широта, довгота)"
+            value={coordinates.start}
             variant="outlined"
             fullWidth
             margin="normal"
             disabled
           />
-        ))}
 
-        <TextField
-          label="Кінцева точка (широта, довгота)"
-          value={coordinates.end}
-          variant="outlined"
-          fullWidth
-          margin="normal"
-          disabled
-        />
+          {intermediatePoints.map((point, index) => (
+            <TextField
+              key={index}
+              label={`Проміжна точка ${index + 1} (широта, довгота)`}
+              value={`${point.lat}, ${point.lng}`}
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              disabled
+            />
+          ))}
+
+          <TextField
+            label="Кінцева точка (широта, довгота)"
+            value={coordinates.end}
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            disabled
+          />
+        </Box>
+
         {children}
       </Box>
     </>
