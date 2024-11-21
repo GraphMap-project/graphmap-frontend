@@ -59,11 +59,12 @@ const AddMarker = ({ onAddMarker }) => {
         if (!isWater) {
           onAddMarker(e.latlng);
         } else {
-          alert('Please place the marker on land.');
+          // TODO: add toast
+          alert('Не можна ставити маркер на воду');
         }
       } else {
         // Показывать alert, если клик за пределами Украины
-        alert('Please place the marker within the borders of Ukraine.');
+        alert('Не можна ставити маркер поза межами України');
       }
     },
   });
@@ -150,7 +151,6 @@ const MapPage = () => {
   const getShortestPath = async () => {
     try {
       if (markers.length === 0) {
-        console.log('No markers to send.');
         return;
       }
 
