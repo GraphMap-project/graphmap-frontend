@@ -41,6 +41,8 @@ const intermediateIcon = new L.Icon({
   iconAnchor: [15, 30],
 });
 
+const RAPID_ISITWATER_API_KEY = import.meta.env.VITE_RAPID_ISITWATER_API_KEY;
+
 const AddMarker = ({ onAddMarker }) => {
   // eslint-disable-next-line no-unused-vars
   const map = useMapEvents({
@@ -50,9 +52,15 @@ const AddMarker = ({ onAddMarker }) => {
 
       // Проверка, что клик внутри Украины через API Nominatim
       const isInsideUkraine = await checkIfInsideUkraine(lat, lng);
+      const isWater = await checkIfWater(lat, lng);
+      console.log(isWater);
 
       if (isInsideUkraine) {
-        onAddMarker(e.latlng);
+        if (!isWater) {
+          onAddMarker(e.latlng);
+        } else {
+          alert('Please place the marker on land.');
+        }
       } else {
         // Показывать alert, если клик за пределами Украины
         alert('Please place the marker within the borders of Ukraine.');
@@ -67,6 +75,7 @@ const AddMarker = ({ onAddMarker }) => {
     try {
       const response = await fetch(url);
       const data = await response.json();
+
       const country_code = data?.address?.country_code;
 
       return country_code === 'ua';
@@ -74,6 +83,21 @@ const AddMarker = ({ onAddMarker }) => {
       console.error('Error checking location:', error);
       return false;
     }
+  };
+
+  const checkIfWater = async (lat, lng) => {
+    const url = `https://isitwater-com.p.rapidapi.com/?latitude=${lat}&longitude=${lng}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': RAPID_ISITWATER_API_KEY,
+        'X-RapidAPI-Host': 'isitwater-com.p.rapidapi.com',
+      },
+    });
+
+    const data = await response.json();
+
+    return data.water;
   };
 
   return null;
@@ -160,7 +184,7 @@ const MapPage = () => {
         <Button variant="contained" onClick={getShortestPath} className="bg-primary">
           Побудувати маршрут
         </Button>
-        <Button variant="contained" onClick={clearMarkers} className="bg-primary">
+        <Button variant="contained" onClick={clearMarkers} className="bg-red_custom">
           Очистити маркери
         </Button>
       </SideMenu>
