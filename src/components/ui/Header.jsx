@@ -4,7 +4,7 @@ import { AppBar, Box, Button, Link, Toolbar, Typography } from '@mui/material';
 
 const Header = () => {
   return (
-    <AppBar position="static" className="bg-primary">
+    <AppBar position="static" className="bg-primary h-[10%] flex justify-center">
       <Toolbar>
         <Typography variant="h6" component="div" className="grow">
           <Link component={NavLink} to="/" underline="none" className="text-white">
@@ -16,6 +16,8 @@ const Header = () => {
             variant="outlined"
             color="secondary"
             className="border-secondary text-secondary hover:bg-secondary hover:text-white"
+            component={NavLink}
+            to="/login"
           >
             Login
           </Button>

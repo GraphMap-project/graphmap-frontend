@@ -170,7 +170,7 @@ const MapPage = () => {
   };
 
   return (
-    <Box className="flex h-[90vh] flex-col relative">
+    <Box className="flex h-[85vh] flex-col relative">
       <SideMenu
         open={sidebarOpen}
         setOpen={setSidebarOpen}
