@@ -1,13 +1,34 @@
-import { AppBar, Box, Toolbar, Typography } from '@mui/material';
+import { NavLink } from 'react-router-dom';
+
+import { AppBar, Box, Button, Link, Toolbar, Typography } from '@mui/material';
 
 const Header = () => {
   return (
     <AppBar position="static" className="bg-primary">
       <Toolbar>
         <Typography variant="h6" component="div" className="grow">
-          GraphMap
+          <Link component={NavLink} to="/" underline="none" className="text-white">
+            GraphMap
+          </Link>
         </Typography>
-        <Box></Box>
+        <Box className="flex space-x-4">
+          <Button
+            variant="outlined"
+            color="secondary"
+            className="border-secondary text-secondary hover:bg-secondary hover:text-white"
+          >
+            Login
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            component={NavLink}
+            className="border-secondary text-secondary hover:bg-secondary hover:text-white"
+            to="/register"
+          >
+            Register
+          </Button>
+        </Box>
       </Toolbar>
     </AppBar>
   );
