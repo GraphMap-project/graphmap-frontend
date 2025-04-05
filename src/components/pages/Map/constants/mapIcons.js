@@ -1,8 +1,8 @@
 import L from 'leaflet';
 
-import blueMarker from '../../../assets/markers/marker_blue.png';
-import intermediateMarker from '../../../assets/markers/marker_intermediate.png';
-import redMarker from '../../../assets/markers/marker_red.png';
+import blueMarker from '@/assets/markers/marker_blue.png';
+import intermediateMarker from '@/assets/markers/marker_intermediate.png';
+import redMarker from '@/assets/markers/marker_red.png';
 
 export const startIcon = new L.Icon({
   iconUrl: blueMarker,

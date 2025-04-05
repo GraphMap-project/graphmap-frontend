@@ -1,8 +1,8 @@
 import { Route, Routes } from 'react-router-dom';
 
-import { MapPage } from './components/Map';
 import { RegisterPage } from './components/pages';
 import { LoginPage } from './components/pages';
+import { MapPage } from './components/pages/Map';
 import { Footer, Header } from './components/ui';
 
 function App() {

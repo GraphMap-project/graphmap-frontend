@@ -2,16 +2,16 @@ import { useState } from 'react';
 
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 
+import { AddMarker } from '.';
 import AddIcon from '@mui/icons-material/Add';
 import { Box, Button, IconButton, Typography } from '@mui/material';
+
+import { SideMenu } from '@/components/ui';
 
 import { axiosInstance } from '@/core/api';
 import { useAppContext } from '@/core/context/AppContext';
 import { cn } from '@/core/utils';
 
-import { SideMenu } from '../SideMenu/SideMenu';
-
-import AddMarker from './AddMarker';
 import { endIcon, intermediateIcon, startIcon } from './constants/mapIcons';
 
 import 'leaflet/dist/leaflet.css';
@@ -73,6 +73,7 @@ const MapPage = () => {
       }
 
       const data = {
+        algorithm: 'dijkstra',
         start_point: [markers[0].lat, markers[0].lng],
         intermediate_points: intermediatePoints.map(point => [point.lat, point.lng]),
         end_point: [markers[1].lat, markers[1].lng],
