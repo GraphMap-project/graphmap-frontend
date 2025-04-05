@@ -8,8 +8,8 @@ import { Box, Button, IconButton, Typography } from '@mui/material';
 
 import { SideMenu } from '@/components/ui';
 
-import { axiosInstance } from '@/core/api';
 import { useAppContext } from '@/core/context/AppContext';
+import RouteService from '@/core/service/RouteService';
 import { cn } from '@/core/utils';
 
 import { endIcon, intermediateIcon, startIcon } from './constants/mapIcons';
@@ -80,9 +80,14 @@ const MapPage = () => {
       };
 
       console.log('Sending coordinates:', data);
-      axiosInstance.post('/shortest_path', data).then(response => {
-        console.log('Response from server:', response.data);
-      });
+
+      RouteService.buildRoute(data)
+        .then(response => {
+          console.log('Response from server:', response.route);
+        })
+        .catch(error => {
+          console.log('Error building route', error);
+        });
     } catch (error) {
       console.error('Error sending coordinates:', error);
     }
