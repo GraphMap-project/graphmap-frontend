@@ -1,6 +1,8 @@
 import { useState } from 'react';
 
 import { MapContainer, Marker, Polyline, TileLayer } from 'react-leaflet';
+import { FeatureGroup } from 'react-leaflet';
+import { EditControl } from 'react-leaflet-draw';
 
 import { AddMarker } from '.';
 import AddIcon from '@mui/icons-material/Add';
@@ -14,6 +16,7 @@ import { cn } from '@/core/utils';
 
 import { endIcon, intermediateIcon, startIcon } from './constants/mapIcons';
 
+import 'leaflet-draw/dist/leaflet.draw.css';
 import 'leaflet/dist/leaflet.css';
 
 const ukraineBounds = [
@@ -27,9 +30,22 @@ const MapPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [intermediatePoints, setIntermediatePoints] = useState([]);
   const [routePath, setRoutePath] = useState([]);
+  const [threats, setThreats] = useState([]);
+
+  const handleDrawCreate = e => {
+    const layer = e.layer;
+    const geojson = layer.toGeoJSON();
+    const coordinates = geojson.geometry.coordinates[0]; // [ [lng, lat], ... ]
+
+    const latlngs = coordinates.map(([lng, lat]) => ({ lat, lng }));
+    setThreats(prev => [...prev, latlngs]);
+  };
+
+  const handleDrawDelete = () => {
+    setThreats([]);
+  };
 
   const handleAddMarker = latlng => {
-    console.log(latlng);
     const newMarkers = [...markers, latlng];
 
     if (markers.length < 2) {
@@ -79,13 +95,13 @@ const MapPage = () => {
         start_point: [markers[0].lat, markers[0].lng],
         intermediate_points: intermediatePoints.map(point => [point.lat, point.lng]),
         end_point: [markers[1].lat, markers[1].lng],
+        threats: threats.map(zone => zone.map(coord => [coord.lat, coord.lng])),
       };
 
       console.log('Sending coordinates:', data);
 
       RouteService.buildRoute(data)
         .then(response => {
-          console.log('Response from server:', response.route);
           setRoutePath(response.route);
         })
         .catch(error => {
@@ -159,6 +175,28 @@ const MapPage = () => {
           {routePath.length > 0 && (
             <Polyline positions={routePath} pathOptions={{ color: 'blue', weight: 2 }} />
           )}
+
+          <FeatureGroup>
+            <EditControl
+              position="topright"
+              onCreated={handleDrawCreate}
+              onDeleted={handleDrawDelete}
+              draw={{
+                rectangle: false,
+                circle: false,
+                circlemarker: false,
+                marker: false,
+                polyline: false,
+                polygon: {
+                  allowIntersection: false,
+                  showArea: false,
+                  shapeOptions: {
+                    color: 'red',
+                  },
+                },
+              }}
+            />
+          </FeatureGroup>
         </MapContainer>
       </Box>
     </Box>
