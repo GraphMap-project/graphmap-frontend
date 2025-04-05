@@ -1,19 +1,18 @@
 import { useState } from 'react';
 
-import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet';
+import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 
 import AddIcon from '@mui/icons-material/Add';
 import { Box, Button, IconButton, Typography } from '@mui/material';
-import L from 'leaflet';
 
 import { axiosInstance } from '@/core/api';
 import { useAppContext } from '@/core/context/AppContext';
 import { cn } from '@/core/utils';
 
-import blueMarker from '../../assets/markers/marker_blue.png';
-import intermediateMarker from '../../assets/markers/marker_intermediate.png';
-import redMarker from '../../assets/markers/marker_red.png';
 import { SideMenu } from '../SideMenu/SideMenu';
+
+import AddMarker from './AddMarker';
+import { endIcon, intermediateIcon, startIcon } from './constants/mapIcons';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -22,88 +21,6 @@ const ukraineBounds = [
   [52.5, 40.2], // Northeast corner (latitude, longitude)
 ];
 
-const startIcon = new L.Icon({
-  iconUrl: blueMarker,
-  // iconSize: [25, 41],
-  iconAnchor: [25, 50],
-  popupAnchor: [0, -41],
-});
-
-const endIcon = new L.Icon({
-  iconUrl: redMarker,
-  // iconSize: [25, 41],
-  iconAnchor: [25, 50],
-  popupAnchor: [0, -41],
-});
-
-const intermediateIcon = new L.Icon({
-  iconUrl: intermediateMarker,
-  iconAnchor: [15, 30],
-});
-
-const RAPID_ISITWATER_API_KEY = import.meta.env.VITE_RAPID_ISITWATER_API_KEY;
-
-const AddMarker = ({ onAddMarker }) => {
-  // eslint-disable-next-line no-unused-vars
-  const map = useMapEvents({
-    async click(e) {
-      const lat = e.latlng.lat;
-      const lng = e.latlng.lng;
-
-      // Проверка, что клик внутри Украины через API Nominatim
-      const isInsideUkraine = await checkIfInsideUkraine(lat, lng);
-      const isWater = await checkIfWater(lat, lng);
-      console.log(isWater);
-
-      if (isInsideUkraine) {
-        if (!isWater) {
-          onAddMarker(e.latlng);
-        } else {
-          // TODO: add toast
-          alert('Не можна ставити маркер на воду');
-        }
-      } else {
-        // Показывать alert, если клик за пределами Украины
-        alert('Не можна ставити маркер поза межами України');
-      }
-    },
-  });
-
-  // Функция для проверки, находится ли точка в Украине
-  const checkIfInsideUkraine = async (lat, lng) => {
-    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`;
-
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-
-      const country_code = data?.address?.country_code;
-
-      return country_code === 'ua';
-    } catch (error) {
-      console.error('Error checking location:', error);
-      return false;
-    }
-  };
-
-  const checkIfWater = async (lat, lng) => {
-    const url = `https://isitwater-com.p.rapidapi.com/?latitude=${lat}&longitude=${lng}`;
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': RAPID_ISITWATER_API_KEY,
-        'X-RapidAPI-Host': 'isitwater-com.p.rapidapi.com',
-      },
-    });
-
-    const data = await response.json();
-
-    return data.water;
-  };
-
-  return null;
-};
-
 const MapPage = () => {
   const { coords, setStartCoords, setEndCoords, clearCoords } = useAppContext();
   const [markers, setMarkers] = useState([]);
@@ -111,6 +28,7 @@ const MapPage = () => {
   const [intermediatePoints, setIntermediatePoints] = useState([]);
 
   const handleAddMarker = latlng => {
+    console.log(latlng);
     const newMarkers = [...markers, latlng];
 
     if (markers.length < 2) {
