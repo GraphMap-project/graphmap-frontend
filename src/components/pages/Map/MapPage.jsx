@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { MapContainer, Marker, TileLayer } from 'react-leaflet';
+import { MapContainer, Marker, Polyline, TileLayer } from 'react-leaflet';
 
 import { AddMarker } from '.';
 import AddIcon from '@mui/icons-material/Add';
@@ -26,6 +26,7 @@ const MapPage = () => {
   const [markers, setMarkers] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [intermediatePoints, setIntermediatePoints] = useState([]);
+  const [routePath, setRoutePath] = useState([]);
 
   const handleAddMarker = latlng => {
     console.log(latlng);
@@ -64,6 +65,7 @@ const MapPage = () => {
     clearCoords();
     setSidebarOpen(false);
     setIntermediatePoints([]);
+    setRoutePath([]);
   };
 
   const getShortestPath = async () => {
@@ -84,6 +86,7 @@ const MapPage = () => {
       RouteService.buildRoute(data)
         .then(response => {
           console.log('Response from server:', response.route);
+          setRoutePath(response.route);
         })
         .catch(error => {
           console.log('Error building route', error);
@@ -151,6 +154,10 @@ const MapPage = () => {
                   icon={intermediateIcon}
                 />
               ),
+          )}
+
+          {routePath.length > 0 && (
+            <Polyline positions={routePath} pathOptions={{ color: 'blue', weight: 2 }} />
           )}
         </MapContainer>
       </Box>
