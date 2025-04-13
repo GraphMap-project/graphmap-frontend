@@ -6,7 +6,7 @@ import { EditControl } from 'react-leaflet-draw';
 
 import { AddMarker } from '.';
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Button, IconButton, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, IconButton, Typography } from '@mui/material';
 
 import { SideMenu } from '@/components/ui';
 
@@ -32,6 +32,7 @@ const MapPage = () => {
   const [routePath, setRoutePath] = useState([]);
   const [threats, setThreats] = useState([]);
   const [routeDistance, setRouteDistance] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleDrawCreate = e => {
     const layer = e.layer;
@@ -87,11 +88,11 @@ const MapPage = () => {
   };
 
   const getShortestPath = async () => {
+    if (markers.length === 0) {
+      return;
+    }
+    setIsLoading(true);
     try {
-      if (markers.length === 0) {
-        return;
-      }
-
       const data = {
         algorithm: 'dijkstra',
         start_point: [markers[0].lat, markers[0].lng],
@@ -102,16 +103,13 @@ const MapPage = () => {
 
       console.log('Sending coordinates:', data);
 
-      RouteService.buildRoute(data)
-        .then(response => {
-          setRoutePath(response.route);
-          setRouteDistance(response.distance);
-        })
-        .catch(error => {
-          console.log('Error building route', error);
-        });
+      const response = await RouteService.buildRoute(data);
+      setRoutePath(response.route);
+      setRouteDistance(response.distance);
     } catch (error) {
       console.error('Error sending coordinates:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -130,10 +128,27 @@ const MapPage = () => {
         <Typography className="text-primary">
           Відстань маршруту: {routeDistance} км
         </Typography>
-        <Button variant="contained" onClick={getShortestPath} className="bg-primary">
-          Побудувати маршрут
+        <Button
+          variant="contained"
+          onClick={getShortestPath}
+          className="bg-primary"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <CircularProgress size={20} className="text-white" />
+          ) : (
+            'Побудувати маршрут'
+          )}
         </Button>
-        <Button variant="contained" onClick={clearMarkers} className="bg-red_custom">
+        <Button
+          variant="contained"
+          onClick={clearMarkers}
+          className={cn(
+            'bg-red_custom text-white transition-all duration-200',
+            isLoading && 'opacity-50 cursor-not-allowed',
+          )}
+          disabled={isLoading}
+        >
           Очистити маркери
         </Button>
       </SideMenu>
