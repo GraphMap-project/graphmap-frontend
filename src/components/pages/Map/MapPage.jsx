@@ -31,6 +31,7 @@ const MapPage = () => {
   const [intermediatePoints, setIntermediatePoints] = useState([]);
   const [routePath, setRoutePath] = useState([]);
   const [threats, setThreats] = useState([]);
+  const [routeDistance, setRouteDistance] = useState(null);
 
   const handleDrawCreate = e => {
     const layer = e.layer;
@@ -82,6 +83,7 @@ const MapPage = () => {
     setSidebarOpen(false);
     setIntermediatePoints([]);
     setRoutePath([]);
+    setRouteDistance(null);
   };
 
   const getShortestPath = async () => {
@@ -103,6 +105,7 @@ const MapPage = () => {
       RouteService.buildRoute(data)
         .then(response => {
           setRoutePath(response.route);
+          setRouteDistance(response.distance);
         })
         .catch(error => {
           console.log('Error building route', error);
@@ -124,6 +127,9 @@ const MapPage = () => {
           <AddIcon />
           <Typography className="text-primary">Додати проміжну точку</Typography>
         </IconButton>
+        <Typography className="text-primary">
+          Відстань маршруту: {routeDistance} км
+        </Typography>
         <Button variant="contained" onClick={getShortestPath} className="bg-primary">
           Побудувати маршрут
         </Button>
