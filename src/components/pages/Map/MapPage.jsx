@@ -15,6 +15,7 @@ import RouteService from '@/core/service/RouteService';
 import { cn } from '@/core/utils';
 
 import { endIcon, intermediateIcon, startIcon } from './constants/mapIcons';
+import { getLandmarkName } from './utils/geolocationUtils';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 import 'leaflet/dist/leaflet.css';
@@ -27,6 +28,9 @@ const ukraineBounds = [
 const MapPage = () => {
   const { coords, setStartCoords, setEndCoords, clearCoords } = useAppContext();
   const [markers, setMarkers] = useState([]);
+  const [startPointName, setStartPointName] = useState('');
+  const [endPointName, setEndPointName] = useState('');
+  const [intermediatePointNames, setIntermediatePointNames] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [intermediatePoints, setIntermediatePoints] = useState([]);
   const [routePath, setRoutePath] = useState([]);
@@ -47,8 +51,11 @@ const MapPage = () => {
     setThreats([]);
   };
 
-  const handleAddMarker = latlng => {
+  const handleAddMarker = async latlng => {
     const newMarkers = [...markers, latlng];
+    const landmarkName = await getLandmarkName(latlng.lat, latlng.lng);
+
+    console.log(landmarkName);
 
     if (markers.length < 2) {
       setMarkers(newMarkers);
@@ -56,9 +63,11 @@ const MapPage = () => {
 
     if (newMarkers.length === 1) {
       setStartCoords(latlng);
+      setStartPointName(landmarkName);
       setSidebarOpen(true);
     } else if (newMarkers.length === 2) {
       setEndCoords(latlng);
+      setEndPointName(landmarkName);
     } else {
       // Если есть промежуточная точка без координат, заполняем её
       const emptyIndex = intermediatePoints.findIndex(point => !point.lat && !point.lng);
@@ -66,6 +75,9 @@ const MapPage = () => {
         const updatedPoints = [...intermediatePoints];
         updatedPoints[emptyIndex] = latlng;
         setIntermediatePoints(updatedPoints);
+        const updatedNames = [...intermediatePointNames];
+        updatedNames[emptyIndex] = landmarkName;
+        setIntermediatePointNames(updatedNames);
       }
     }
   };
@@ -75,6 +87,7 @@ const MapPage = () => {
     const hasEmptyPoint = intermediatePoints.some(point => !point.lat && !point.lng);
     if (!hasEmptyPoint) {
       setIntermediatePoints([...intermediatePoints, { lat: '', lng: '' }]);
+      setIntermediatePointNames([...intermediatePointNames, '']);
     }
   };
 
@@ -85,6 +98,9 @@ const MapPage = () => {
     setIntermediatePoints([]);
     setRoutePath([]);
     setRouteDistance(null);
+    setStartPointName('');
+    setEndPointName('');
+    setIntermediatePointNames([]);
   };
 
   const getShortestPath = async () => {
@@ -121,6 +137,9 @@ const MapPage = () => {
         coordinates={coords}
         intermediatePoints={intermediatePoints}
         addIntermediatePoint={addIntermediatePoint}
+        startPointName={startPointName}
+        endPointName={endPointName}
+        intermediatePointNames={intermediatePointNames}
       >
         {routeDistance !== null && (
           <Typography className="text-primary flex items-center gap-1">

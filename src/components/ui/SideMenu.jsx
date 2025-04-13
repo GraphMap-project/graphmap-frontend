@@ -9,6 +9,9 @@ export const SideMenu = ({
   intermediatePoints,
   children,
   addIntermediatePoint,
+  startPointName,
+  endPointName,
+  intermediatePointNames,
 }) => {
   return (
     <>
@@ -29,7 +32,7 @@ export const SideMenu = ({
         <Box className="flex-1 overflow-y-auto">
           <TextField
             label="Початкова точка (широта, довгота)"
-            value={coordinates.start}
+            value={startPointName || coordinates.start}
             variant="outlined"
             fullWidth
             margin="normal"
@@ -40,7 +43,7 @@ export const SideMenu = ({
             <TextField
               key={index}
               label={`Проміжна точка ${index + 1} (широта, довгота)`}
-              value={`${point.lat}, ${point.lng}`}
+              value={intermediatePointNames[index] || `${point.lat}, ${point.lng}`}
               variant="outlined"
               fullWidth
               margin="normal"
@@ -50,7 +53,7 @@ export const SideMenu = ({
 
           <TextField
             label="Кінцева точка (широта, довгота)"
-            value={coordinates.end}
+            value={endPointName || coordinates.end}
             variant="outlined"
             fullWidth
             margin="normal"

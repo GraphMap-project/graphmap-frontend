@@ -16,6 +16,21 @@ export const checkIfInsideUkraine = async (lat, lng) => {
   }
 };
 
+export const getLandmarkName = async (lat, lng) => {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=uk`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    const landmarkName =
+      data?.address?.city || data?.address?.town || data?.address?.village;
+    return landmarkName;
+  } catch (error) {
+    console.error('Error checking landmark name: ', error);
+  }
+};
+
 export const checkIfWater = async (lat, lng) => {
   const url = `https://isitwater-com.p.rapidapi.com/?latitude=${lat}&longitude=${lng}`;
   const response = await fetch(url, {
