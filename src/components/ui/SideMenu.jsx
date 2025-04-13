@@ -1,8 +1,15 @@
-import { Box, TextField, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { Box, IconButton, TextField, Typography } from '@mui/material';
 
 import { cn } from '@/core/utils';
 
-export const SideMenu = ({ open, coordinates, intermediatePoints, children }) => {
+export const SideMenu = ({
+  open,
+  coordinates,
+  intermediatePoints,
+  children,
+  addIntermediatePoint,
+}) => {
   return (
     <>
       <Box
@@ -49,6 +56,14 @@ export const SideMenu = ({ open, coordinates, intermediatePoints, children }) =>
             margin="normal"
             disabled
           />
+          <IconButton
+            aria-label="addPoint"
+            onClick={addIntermediatePoint}
+            className="mb-2"
+          >
+            <AddIcon />
+            <Typography className="text-primary">Додати проміжну точку</Typography>
+          </IconButton>
         </Box>
 
         {children}

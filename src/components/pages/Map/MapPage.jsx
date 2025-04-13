@@ -5,8 +5,8 @@ import { FeatureGroup } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 
 import { AddMarker } from '.';
-import AddIcon from '@mui/icons-material/Add';
-import { Box, Button, CircularProgress, IconButton, Typography } from '@mui/material';
+import RouteIcon from '@mui/icons-material/Route';
+import { Box, Button, CircularProgress, Typography } from '@mui/material';
 
 import { SideMenu } from '@/components/ui';
 
@@ -120,14 +120,14 @@ const MapPage = () => {
         setOpen={setSidebarOpen}
         coordinates={coords}
         intermediatePoints={intermediatePoints}
+        addIntermediatePoint={addIntermediatePoint}
       >
-        <IconButton aria-label="addPoint" onClick={addIntermediatePoint}>
-          <AddIcon />
-          <Typography className="text-primary">Додати проміжну точку</Typography>
-        </IconButton>
-        <Typography className="text-primary">
-          Відстань маршруту: {routeDistance} км
-        </Typography>
+        {routeDistance !== null && (
+          <Typography className="text-primary flex items-center gap-1">
+            <RouteIcon fontSize="small" />
+            Відстань: {routeDistance} км
+          </Typography>
+        )}
         <Button
           variant="contained"
           onClick={getShortestPath}
@@ -149,7 +149,7 @@ const MapPage = () => {
           )}
           disabled={isLoading}
         >
-          Очистити маркери
+          Очистити
         </Button>
       </SideMenu>
       <Box
