@@ -1,7 +1,13 @@
 class ApiService {
   static baseURL = 'http://127.0.0.1:8000';
 
-  static async request(endpoint, method = 'GET', data = null, headers = {}) {
+  static async request(
+    endpoint,
+    method = 'GET',
+    data = null,
+    headers = {},
+    responseType = 'json',
+  ) {
     const options = {
       method,
       headers: {
@@ -16,7 +22,14 @@ class ApiService {
 
     try {
       const response = await fetch(`${this.baseURL}/${endpoint}`, options);
-      const responseData = await response.json();
+
+      let responseData;
+
+      if (responseType === 'blob') {
+        responseData = await response.blob();
+      } else {
+        responseData = await response.json();
+      }
 
       if (!response.ok) {
         const errorMessage = responseData.errors

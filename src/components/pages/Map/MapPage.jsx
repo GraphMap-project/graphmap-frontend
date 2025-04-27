@@ -5,8 +5,17 @@ import { FeatureGroup } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 
 import { AddMarker } from '.';
+import AddIcon from '@mui/icons-material/Add';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import RouteIcon from '@mui/icons-material/Route';
-import { Box, Button, CircularProgress, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  TextField,
+  Typography,
+} from '@mui/material';
 
 import { SideMenu } from '@/components/ui';
 
@@ -28,15 +37,29 @@ const ukraineBounds = [
 const MapPage = () => {
   const { coords, setStartCoords, setEndCoords, clearCoords } = useAppContext();
   const [markers, setMarkers] = useState([]);
+  // Point names
   const [startPointName, setStartPointName] = useState('');
-  const [endPointName, setEndPointName] = useState('');
   const [intermediatePointNames, setIntermediatePointNames] = useState([]);
+  const [endPointName, setEndPointName] = useState('');
+
+  // Sidebar
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Intermediate points
   const [intermediatePoints, setIntermediatePoints] = useState([]);
-  const [routePath, setRoutePath] = useState([]);
+  // Threats
   const [threats, setThreats] = useState([]);
+
+  // Route and distance
+  const [routePath, setRoutePath] = useState([]);
   const [routeDistance, setRouteDistance] = useState(null);
+
+  // Loading
   const [isLoading, setIsLoading] = useState(false);
+
+  // File saving
+  const [isFileLoading, setIsFileLoading] = useState(false);
+  const [routeId, setRouteId] = useState(null);
 
   const handleDrawCreate = e => {
     const layer = e.layer;
@@ -122,6 +145,8 @@ const MapPage = () => {
       const response = await RouteService.buildRoute(data);
       setRoutePath(response.route);
       setRouteDistance(response.distance);
+
+      setRouteId(response.route_id);
     } catch (error) {
       console.error('Error sending coordinates:', error);
     } finally {
@@ -129,18 +154,85 @@ const MapPage = () => {
     }
   };
 
+  const handleDownloadFile = async () => {
+    if (!routeId) return;
+
+    setIsFileLoading(true);
+
+    try {
+      const response = await RouteService.generateRouteFile(routeId);
+      const blob = new Blob([response], { type: 'text/plain' });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+
+      link.href = url;
+      link.setAttribute('download', 'route.txt');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error generating file:', error);
+    } finally {
+      setIsFileLoading(false);
+    }
+  };
+
   return (
     <Box className="flex h-[85vh] flex-col relative">
-      <SideMenu
-        open={sidebarOpen}
-        setOpen={setSidebarOpen}
-        coordinates={coords}
-        intermediatePoints={intermediatePoints}
-        addIntermediatePoint={addIntermediatePoint}
-        startPointName={startPointName}
-        endPointName={endPointName}
-        intermediatePointNames={intermediatePointNames}
-      >
+      <SideMenu open={sidebarOpen}>
+        <Box className="flex justify-between items-center w-full mb-[2px]">
+          <Typography variant="h6">Меню</Typography>
+          <IconButton onClick={handleDownloadFile} disabled={isFileLoading}>
+            {isFileLoading ? (
+              <CircularProgress size={20} className="text-black" />
+            ) : (
+              <FileDownloadIcon />
+            )}
+          </IconButton>
+        </Box>
+
+        {/* Текстовые поля для координат */}
+        <Box className="flex-1 overflow-y-auto">
+          <TextField
+            label="Початкова точка (широта, довгота)"
+            value={startPointName || coords.start}
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            disabled
+          />
+
+          {intermediatePoints.map((point, index) => (
+            <TextField
+              key={index}
+              label={`Проміжна точка ${index + 1} (широта, довгота)`}
+              value={intermediatePointNames[index] || `${point.lat}, ${point.lng}`}
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              disabled
+            />
+          ))}
+
+          <TextField
+            label="Кінцева точка (широта, довгота)"
+            value={endPointName || coords.end}
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            disabled
+          />
+          <IconButton
+            aria-label="addPoint"
+            onClick={addIntermediatePoint}
+            className="mb-2"
+          >
+            <AddIcon />
+            <Typography className="text-primary">Додати проміжну точку</Typography>
+          </IconButton>
+        </Box>
+        {/* ------------------------------ */}
         {routeDistance !== null && (
           <Typography className="text-primary flex items-center gap-1">
             <RouteIcon fontSize="small" />
