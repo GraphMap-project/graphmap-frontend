@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 
+import { useAuth } from '@/core/context/AuthContext';
 import AuthService from '@/core/service/AuthService';
 
 const RegisterPage = () => {
@@ -21,6 +22,8 @@ const RegisterPage = () => {
   const [errorMessages, setErrorMessages] = useState([]);
 
   const [loading, setLoading] = useState(false);
+
+  const { login } = useAuth();
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -32,6 +35,8 @@ const RegisterPage = () => {
       const response = await AuthService.register(userData);
 
       console.log(response);
+
+      login(response.access_token);
 
       window.location.href = '/';
     } catch (error) {

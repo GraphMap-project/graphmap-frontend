@@ -19,6 +19,7 @@
     "clsx": "^2.1.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "jwt-decode": "^4.0.0",
     "leaflet-boundary-canvas": "^1.0.0",
     "leaflet-draw": "^1.0.4",
     "postcss": "^8.4.47",
