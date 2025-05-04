@@ -32,10 +32,34 @@ class ApiService {
       }
 
       if (!response.ok) {
-        const errorMessage = responseData.errors
-          ? Object.values(responseData.errors).flat().join(', ')
-          : responseData.message || `Request error ${response.status}`;
-        throw new Error(errorMessage);
+        let errorMessages = [`Request error ${response.status}`];
+
+        if (responseData.errors) {
+          errorMessages = Object.values(responseData.errors).flat();
+        } else if (Array.isArray(responseData.detail)) {
+          const detail = responseData.detail[0];
+
+          // Обработка ошибок валидации пароля
+          if (detail?.ctx?.error?.errors && typeof detail.ctx.error.errors === 'object') {
+            // Получаем ошибки из нового формата ctx.error.errors
+            errorMessages = Object.values(detail.ctx.error.errors);
+          } else if (detail?.ctx?.errors && typeof detail.ctx.errors === 'object') {
+            // Старый формат для обратной совместимости
+            errorMessages = Object.values(detail.ctx.errors);
+          } else if (typeof detail.msg === 'string') {
+            errorMessages = [detail.msg];
+          } else {
+            errorMessages = [JSON.stringify(detail)];
+          }
+        } else if (typeof responseData.detail === 'string') {
+          errorMessages = [responseData.detail];
+        } else if (typeof responseData.message === 'string') {
+          errorMessages = [responseData.message];
+        }
+
+        const error = new Error(errorMessages.join('\n'));
+        error.messages = errorMessages;
+        throw error;
       }
       return responseData;
     } catch (error) {
