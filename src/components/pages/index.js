@@ -1,4 +1,5 @@
 import LoginPage from './Account/LoginPage';
 import RegisterPage from './Account/RegisterPage';
+import SettingsPage from './Account/SettingsPage';
 
-export { RegisterPage, LoginPage };
+export { RegisterPage, LoginPage, SettingsPage };

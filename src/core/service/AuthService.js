@@ -53,21 +53,42 @@ class AuthService {
     }
   }
 
-  static async requestWithAuth(endpoint, method = 'GET', data = null) {
+  static async requestWithAuth(
+    endpoint,
+    method = 'GET',
+    data = null,
+    responseType = 'json',
+  ) {
     let accessToken = localStorage.getItem('access_token');
 
     try {
-      return await ApiService.request(endpoint, method, data, {
-        Authorization: `Bearer ${accessToken}`,
-      });
+      return await ApiService.request(
+        endpoint,
+        method,
+        data,
+        {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        responseType,
+      );
     } catch (error) {
-      if (error.message.includes('401') || error.message.includes('Unauthorized')) {
+      if (
+        error.status === 401 ||
+        error.message.includes('401') ||
+        error.message.includes('Unauthorized')
+      ) {
         try {
           accessToken = await this.refreshToken();
 
-          return await ApiService.request(endpoint, method, data, {
-            Authorization: `Bearer ${accessToken}`,
-          });
+          return await ApiService.request(
+            endpoint,
+            method,
+            data,
+            {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            responseType,
+          );
         } catch (refreshError) {
           this.logout();
           throw new Error('Session expired. Please log in again.');

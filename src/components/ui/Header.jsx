@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 import {
   AppBar,
@@ -19,6 +19,7 @@ import { useAuth } from '@/core/context/AuthContext';
 const Header = () => {
   const { user, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
+  const navigate = useNavigate();
 
   const handleAvatarClick = event => {
     setAnchorEl(event.currentTarget);
@@ -30,6 +31,11 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
+    setAnchorEl(null);
+  };
+
+  const handleSettings = () => {
+    navigate('/settings');
     setAnchorEl(null);
   };
 
@@ -53,6 +59,7 @@ const Header = () => {
                 open={Boolean(anchorEl)}
                 onClose={handleAvatarClose}
               >
+                <MenuItem onClick={handleSettings}>Settings</MenuItem>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </>

@@ -23,13 +23,8 @@ class ApiService {
     try {
       const response = await fetch(`${this.baseURL}/${endpoint}`, options);
 
-      let responseData;
-
-      if (responseType === 'blob') {
-        responseData = await response.blob();
-      } else {
-        responseData = await response.json();
-      }
+      let responseData =
+        responseType === 'blob' ? await response.blob() : await response.json();
 
       if (!response.ok) {
         let errorMessages = [`Request error ${response.status}`];
@@ -59,6 +54,7 @@ class ApiService {
 
         const error = new Error(errorMessages.join('\n'));
         error.messages = errorMessages;
+        error.status = response.status;
         throw error;
       }
       return responseData;
