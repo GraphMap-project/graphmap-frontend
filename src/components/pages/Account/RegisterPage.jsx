@@ -31,13 +31,8 @@ const RegisterPage = () => {
     setErrorMessages([]);
 
     try {
-      const userData = { email, password };
-      const response = await AuthService.register(userData);
-
-      console.log(response);
-
-      login(response.access_token);
-
+      const response = await AuthService.register({ email, password });
+      login(response.access_token, response.refresh_token);
       window.location.href = '/';
     } catch (error) {
       const messages = error.messages || [error.message];

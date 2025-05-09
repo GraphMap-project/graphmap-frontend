@@ -22,9 +22,10 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = token => {
-    localStorage.setItem('access_token', token);
-    const decoded = jwtDecode(token);
+  const login = (accessToken, refreshToken) => {
+    localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('refresh_token', refreshToken);
+    const decoded = jwtDecode(accessToken);
     setUser({ email: decoded.sub });
   };
 
