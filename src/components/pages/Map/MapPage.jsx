@@ -71,10 +71,21 @@ const MapPage = () => {
   const handleDrawCreate = e => {
     const layer = e.layer;
     const geojson = layer.toGeoJSON();
-    const coordinates = geojson.geometry.coordinates[0]; // [ [lng, lat], ... ]
+    const type = geojson.geometry.type;
 
-    const latlngs = coordinates.map(([lng, lat]) => ({ lat, lng }));
-    setThreats(prev => [...prev, latlngs]);
+    let latlngs = [];
+
+    if (type === 'Polygon') {
+      const coordinates = geojson.geometry.coordinates[0]; // [ [lng, lat], ... ]
+      latlngs = coordinates.map(([lng, lat]) => ({ lat, lng }));
+    } else if (type === 'LineString') {
+      const coordinates = geojson.geometry.coordinates; // [ [lng, lat], ... ]
+      latlngs = coordinates.map(([lng, lat]) => ({ lat, lng }));
+    }
+
+    if (latlngs.length > 0) {
+      setThreats(prev => [...prev, latlngs]);
+    }
   };
 
   const handleDrawDelete = () => {
@@ -338,7 +349,7 @@ const MapPage = () => {
                 circle: false,
                 circlemarker: false,
                 marker: false,
-                polyline: false,
+                polyline: true,
                 polygon: {
                   allowIntersection: false,
                   showArea: false,
