@@ -12,7 +12,11 @@ import {
   Box,
   Button,
   CircularProgress,
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -60,6 +64,9 @@ const MapPage = () => {
   // File saving
   const [isFileLoading, setIsFileLoading] = useState(false);
   const [routeId, setRouteId] = useState(null);
+
+  // Algorithm selection
+  const [algorithm, setAlgorithm] = useState('alt');
 
   const handleDrawCreate = e => {
     const layer = e.layer;
@@ -133,7 +140,7 @@ const MapPage = () => {
     setIsLoading(true);
     try {
       const data = {
-        algorithm: 'dijkstra',
+        algorithm: algorithm,
         start_point: [markers[0].lat, markers[0].lng],
         intermediate_points: intermediatePoints.map(point => [point.lat, point.lng]),
         end_point: [markers[1].lat, markers[1].lng],
@@ -231,6 +238,19 @@ const MapPage = () => {
             <AddIcon />
             <Typography className="text-primary">Додати проміжну точку</Typography>
           </IconButton>
+          {/* Список алгоритмов */}
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="algorithm-select-label">Алгоритм</InputLabel>
+            <Select
+              labelId="algorithm-select-label"
+              value={algorithm}
+              label="Алгоритм"
+              onChange={e => setAlgorithm(e.target.value)}
+            >
+              <MenuItem value="dijkstra">Dijkstra</MenuItem>
+              <MenuItem value="alt">ALT</MenuItem>
+            </Select>
+          </FormControl>
         </Box>
         {/* ------------------------------ */}
         {routeDistance !== null && (
