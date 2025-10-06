@@ -4,7 +4,7 @@ import { MapContainer, Marker, Polyline, TileLayer } from 'react-leaflet';
 import { FeatureGroup } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 
-import { AddMarker } from '.';
+import { AddMarker, SaveRouteDialog } from '.';
 import AddIcon from '@mui/icons-material/Add';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import RouteIcon from '@mui/icons-material/Route';
@@ -13,10 +13,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   FormControl,
   IconButton,
   InputLabel,
@@ -75,8 +71,6 @@ const MapPage = () => {
 
   // Save route dialog
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const [routeName, setRouteName] = useState('');
-  const [isSaveLoading, setIsSaveLoading] = useState(false);
 
   const handleDrawCreate = e => {
     const layer = e.layer;
@@ -206,30 +200,6 @@ const MapPage = () => {
     }
   };
 
-  const handleSaveRoute = async () => {
-    // Prevent saving if no routeId or empty name
-    if (!routeId || !routeName.trim()) {
-      return;
-    }
-
-    // Show loading indicator
-    setIsSaveLoading(true);
-    try {
-      // Call the saveRoute method from RouteService
-      await RouteService.saveRoute(routeId, routeName.trim());
-      // Close the dialog and reset the route name
-      setSaveDialogOpen(false);
-      setRouteName('');
-
-      // Optionally show success message
-      console.log('Route saved successfully');
-    } catch (error) {
-      console.error('Error saving route:', error);
-    } finally {
-      setIsSaveLoading(false);
-    }
-  };
-
   const handleOpenSaveDialog = () => {
     // Only open if there's a valid routeId
     if (routeId) {
@@ -237,10 +207,12 @@ const MapPage = () => {
     }
   };
 
-  const handleCloseSaveDialog = () => {
-    // Close the dialog and reset the route name
+  const handleCloseSaveDialog = success => {
     setSaveDialogOpen(false);
-    setRouteName('');
+    if (success) {
+      // Optionally show success notification
+      console.log('Route saved successfully');
+    }
   };
 
   return (
@@ -251,14 +223,10 @@ const MapPage = () => {
           {/* Button for saving a route */}
           <IconButton
             onClick={handleOpenSaveDialog}
-            disabled={!routeId || isSaveLoading}
+            disabled={!routeId}
             title="Зберегти маршрут"
           >
-            {isSaveLoading ? (
-              <CircularProgress size={20} className="text-black" />
-            ) : (
-              <SaveIcon />
-            )}
+            <SaveIcon />
           </IconButton>
           {/* Button for downloading a route file */}
           <IconButton
@@ -359,50 +327,11 @@ const MapPage = () => {
         </Button>
       </SideMenu>
       {/* Save Route Dialog */}
-      <Dialog
+      <SaveRouteDialog
         open={saveDialogOpen}
         onClose={handleCloseSaveDialog}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Зберегти маршрут</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Назва маршруту"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={routeName}
-            onChange={e => setRouteName(e.target.value)}
-            disabled={isSaveLoading}
-            placeholder="Введіть назву маршруту"
-            onKeyPress={e => {
-              if (e.key === 'Enter' && routeName.trim()) {
-                handleSaveRoute();
-              }
-            }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseSaveDialog} disabled={isSaveLoading}>
-            Скасувати
-          </Button>
-          <Button
-            onClick={handleSaveRoute}
-            variant="contained"
-            disabled={!routeName.trim() || isSaveLoading}
-            className="bg-primary"
-          >
-            {isSaveLoading ? (
-              <CircularProgress size={20} className="text-white" />
-            ) : (
-              'Зберегти'
-            )}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        routeId={routeId}
+      />
 
       <Box
         className={cn(
