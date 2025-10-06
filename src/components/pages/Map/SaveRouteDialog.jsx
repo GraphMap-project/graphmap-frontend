@@ -12,7 +12,7 @@ import {
 
 import RouteService from '@/core/service/RouteService';
 
-const SaveRouteDialog = ({ open, onClose, routeId }) => {
+const SaveRouteDialog = ({ open, onClose, routeId, onSuccess, onError }) => {
   const [routeName, setRouteName] = useState('');
   const [isSaveLoading, setIsSaveLoading] = useState(false);
 
@@ -28,10 +28,12 @@ const SaveRouteDialog = ({ open, onClose, routeId }) => {
       await RouteService.saveRoute(routeId, routeName.trim());
       // Reset state and close dialog on success
       setRouteName('');
+      onSuccess?.('Маршрут успішно збережено');
       onClose(true); // Pass true to indicate save success
       console.log('Route saved successfully');
     } catch (error) {
       console.error('Error saving route:', error);
+      onError?.('Помилка при збереженні маршруту');
     } finally {
       setIsSaveLoading(false);
     }

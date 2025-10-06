@@ -10,6 +10,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import RouteIcon from '@mui/icons-material/Route';
 import SaveIcon from '@mui/icons-material/Save';
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -18,6 +19,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Snackbar,
   TextField,
   Typography,
 } from '@mui/material';
@@ -71,6 +73,13 @@ const MapPage = () => {
 
   // Save route dialog
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+
+  // Snackbar
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success', // 'success' | 'error' | 'warning' | 'info'
+  });
 
   const handleDrawCreate = e => {
     const layer = e.layer;
@@ -215,6 +224,21 @@ const MapPage = () => {
     }
   };
 
+  const handleSnackBarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar(prev => ({ ...prev, open: false }));
+  };
+
+  const showSuccessSnackbar = message => {
+    setSnackbar({ open: true, message, severity: 'success' });
+  };
+
+  const showErrorSnackbar = message => {
+    setSnackbar({ open: true, message, severity: 'error' });
+  };
+
   return (
     <Box className="flex h-[85vh] flex-col relative">
       <SideMenu open={sidebarOpen}>
@@ -331,7 +355,26 @@ const MapPage = () => {
         open={saveDialogOpen}
         onClose={handleCloseSaveDialog}
         routeId={routeId}
+        onSuccess={showSuccessSnackbar}
+        onError={showErrorSnackbar}
       />
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={handleSnackBarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={handleSnackBarClose}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
 
       <Box
         className={cn(
