@@ -8,10 +8,15 @@ import { AddMarker } from '.';
 import AddIcon from '@mui/icons-material/Add';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import RouteIcon from '@mui/icons-material/Route';
+import SaveIcon from '@mui/icons-material/Save';
 import {
   Box,
   Button,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   IconButton,
   InputLabel,
@@ -67,6 +72,11 @@ const MapPage = () => {
 
   // Algorithm selection
   const [algorithm, setAlgorithm] = useState('alt');
+
+  // Save route dialog
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [routeName, setRouteName] = useState('');
+  const [isSaveLoading, setIsSaveLoading] = useState(false);
 
   const handleDrawCreate = e => {
     const layer = e.layer;
@@ -196,12 +206,58 @@ const MapPage = () => {
     }
   };
 
+  const handleSaveRoute = async () => {
+    if (!routeId || !routeName.trim()) {
+      return;
+    }
+
+    setIsSaveLoading(true);
+    try {
+      await RouteService.saveRoute(routeId, routeName.trim());
+      setSaveDialogOpen(false);
+      setRouteName('');
+
+      // Optionally show success message
+      console.log('Route saved successfully');
+    } catch (error) {
+      console.error('Error saving route:', error);
+    } finally {
+      setIsSaveLoading(false);
+    }
+  };
+
+  const handleOpenSaveDialog = () => {
+    if (routeId) {
+      setSaveDialogOpen(true);
+    }
+  };
+
+  const handleCloseSaveDialog = () => {
+    setSaveDialogOpen(false);
+    setRouteName('');
+  };
+
   return (
     <Box className="flex h-[85vh] flex-col relative">
       <SideMenu open={sidebarOpen}>
         <Box className="flex justify-between items-center w-full mb-[2px]">
           <Typography variant="h6">Меню</Typography>
-          <IconButton onClick={handleDownloadFile} disabled={isFileLoading}>
+          <IconButton
+            onClick={handleOpenSaveDialog}
+            disabled={!routeId || isSaveLoading}
+            title="Зберегти маршрут"
+          >
+            {isSaveLoading ? (
+              <CircularProgress size={20} className="text-black" />
+            ) : (
+              <SaveIcon />
+            )}
+          </IconButton>
+          <IconButton
+            onClick={handleDownloadFile}
+            disabled={isFileLoading}
+            title="Завантажити файл маршруту"
+          >
             {isFileLoading ? (
               <CircularProgress size={20} className="text-black" />
             ) : (
@@ -294,6 +350,52 @@ const MapPage = () => {
           Очистити
         </Button>
       </SideMenu>
+      {/* Save Route Dialog */}
+      <Dialog
+        open={saveDialogOpen}
+        onClose={handleCloseSaveDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Зберегти маршрут</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Назва маршруту"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={routeName}
+            onChange={e => setRouteName(e.target.value)}
+            disabled={isSaveLoading}
+            placeholder="Введіть назву маршруту"
+            onKeyPress={e => {
+              if (e.key === 'Enter' && routeName.trim()) {
+                handleSaveRoute();
+              }
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseSaveDialog} disabled={isSaveLoading}>
+            Скасувати
+          </Button>
+          <Button
+            onClick={handleSaveRoute}
+            variant="contained"
+            disabled={!routeName.trim() || isSaveLoading}
+            className="bg-primary"
+          >
+            {isSaveLoading ? (
+              <CircularProgress size={20} className="text-white" />
+            ) : (
+              'Зберегти'
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Box
         className={cn(
           'flex-1 transition-all duration-300',
