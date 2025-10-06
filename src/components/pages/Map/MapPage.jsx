@@ -207,13 +207,17 @@ const MapPage = () => {
   };
 
   const handleSaveRoute = async () => {
+    // Prevent saving if no routeId or empty name
     if (!routeId || !routeName.trim()) {
       return;
     }
 
+    // Show loading indicator
     setIsSaveLoading(true);
     try {
+      // Call the saveRoute method from RouteService
       await RouteService.saveRoute(routeId, routeName.trim());
+      // Close the dialog and reset the route name
       setSaveDialogOpen(false);
       setRouteName('');
 
@@ -227,12 +231,14 @@ const MapPage = () => {
   };
 
   const handleOpenSaveDialog = () => {
+    // Only open if there's a valid routeId
     if (routeId) {
       setSaveDialogOpen(true);
     }
   };
 
   const handleCloseSaveDialog = () => {
+    // Close the dialog and reset the route name
     setSaveDialogOpen(false);
     setRouteName('');
   };
@@ -242,6 +248,7 @@ const MapPage = () => {
       <SideMenu open={sidebarOpen}>
         <Box className="flex justify-between items-center w-full mb-[2px]">
           <Typography variant="h6">Меню</Typography>
+          {/* Button for saving a route */}
           <IconButton
             onClick={handleOpenSaveDialog}
             disabled={!routeId || isSaveLoading}
@@ -253,6 +260,7 @@ const MapPage = () => {
               <SaveIcon />
             )}
           </IconButton>
+          {/* Button for downloading a route file */}
           <IconButton
             onClick={handleDownloadFile}
             disabled={isFileLoading}
