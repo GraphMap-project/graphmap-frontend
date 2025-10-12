@@ -155,6 +155,7 @@ const MapPage = () => {
     setStartPointName('');
     setEndPointName('');
     setIntermediatePointNames([]);
+    setRouteId(null);
   };
 
   const getShortestPath = async () => {
@@ -255,7 +256,7 @@ const MapPage = () => {
           {/* Button for downloading a route file */}
           <IconButton
             onClick={handleDownloadFile}
-            disabled={isFileLoading}
+            disabled={!routeId || isFileLoading}
             title="Завантажити файл маршруту"
           >
             {isFileLoading ? (
