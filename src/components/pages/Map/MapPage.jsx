@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { MapContainer, Marker, Polyline, TileLayer } from 'react-leaflet';
 import { FeatureGroup } from 'react-leaflet';
@@ -27,6 +27,7 @@ import {
 import { SideMenu } from '@/components/ui';
 
 import { useAppContext } from '@/core/context/AppContext';
+import { useRoute } from '@/core/context/RouteContext';
 import RouteService from '@/core/service/RouteService';
 import { cn } from '@/core/utils';
 
@@ -43,6 +44,8 @@ const ukraineBounds = [
 
 const MapPage = () => {
   const { coords, setStartCoords, setEndCoords, clearCoords } = useAppContext();
+  const { selectedRoute } = useRoute();
+
   const [markers, setMarkers] = useState([]);
   // Point names
   const [startPointName, setStartPointName] = useState('');
@@ -80,6 +83,43 @@ const MapPage = () => {
     message: '',
     severity: 'success', // 'success' | 'error' | 'warning' | 'info'
   });
+
+  useEffect(() => {
+    if (selectedRoute) {
+      if (selectedRoute.start_point && selectedRoute.end_point) {
+        setMarkers([
+          { lat: selectedRoute.start_point[0], lng: selectedRoute.start_point[1] },
+          { lat: selectedRoute.end_point[0], lng: selectedRoute.end_point[1] },
+        ]);
+        setStartCoords({
+          lat: selectedRoute.start_point[0],
+          lng: selectedRoute.start_point[1],
+        });
+        setEndCoords({
+          lat: selectedRoute.end_point[0],
+          lng: selectedRoute.end_point[1],
+        });
+      }
+
+      // Set intermediate points
+      setIntermediatePoints(
+        (selectedRoute.intermediate_points || []).map(([lat, lng]) => ({ lat, lng })),
+      );
+
+      // Set route path and distance
+      setRoutePath(selectedRoute.route_coords || []);
+      setRouteDistance(selectedRoute.distance_km || null);
+
+      // Optionally set route id and open sidebar
+      setRouteId(selectedRoute.id || null);
+      setSidebarOpen(true);
+
+      // Optionally clear point names if not available
+      setStartPointName('');
+      setEndPointName('');
+      setIntermediatePointNames([]);
+    }
+  }, [selectedRoute]);
 
   const handleDrawCreate = e => {
     const layer = e.layer;
@@ -245,26 +285,29 @@ const MapPage = () => {
       <SideMenu open={sidebarOpen}>
         <Box className="flex justify-between items-center w-full mb-[2px]">
           <Typography variant="h6">Меню</Typography>
+
           {/* Button for saving a route */}
-          <IconButton
-            onClick={handleOpenSaveDialog}
-            disabled={!routeId}
-            title="Зберегти маршрут"
-          >
-            <SaveIcon />
-          </IconButton>
-          {/* Button for downloading a route file */}
-          <IconButton
-            onClick={handleDownloadFile}
-            disabled={!routeId || isFileLoading}
-            title="Завантажити файл маршруту"
-          >
-            {isFileLoading ? (
-              <CircularProgress size={20} className="text-black" />
-            ) : (
-              <FileDownloadIcon />
-            )}
-          </IconButton>
+          <Box className="flex items-center space-x-1">
+            <IconButton
+              onClick={handleOpenSaveDialog}
+              disabled={!routeId}
+              title="Зберегти в профілі"
+            >
+              <SaveIcon />
+            </IconButton>
+            {/* Button for downloading a route file */}
+            <IconButton
+              onClick={handleDownloadFile}
+              disabled={!routeId || isFileLoading}
+              title="Завантажити файл маршруту"
+            >
+              {isFileLoading ? (
+                <CircularProgress size={20} className="text-black" />
+              ) : (
+                <FileDownloadIcon />
+              )}
+            </IconButton>
+          </Box>
         </Box>
 
         {/* Текстовые поля для координат */}
