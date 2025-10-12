@@ -2,7 +2,15 @@ import { useEffect, useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
-import { Button, Stack } from '@mui/material';
+import {
+  Box,
+  Button,
+  CardActions,
+  CircularProgress,
+  Divider,
+  Stack,
+  Tooltip,
+} from '@mui/material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
@@ -11,6 +19,14 @@ import { useAuth } from '@/core/context/AuthContext';
 import { useRoute } from '@/core/context/RouteContext.jsx';
 import AuthService from '@/core/service/AuthService';
 
+function DeleteIcon() {
+  return null;
+}
+
+function ShowIcon() {
+  return null;
+}
+
 const SettingsPage = () => {
   const { user } = useAuth();
   const { setSelectedRoute } = useRoute();
@@ -18,6 +34,7 @@ const SettingsPage = () => {
   const [message, setMessage] = useState('Loading...');
   const [error, setError] = useState('');
   const [routes, setRoutes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,6 +50,8 @@ const SettingsPage = () => {
         setRoutes(routesResponse.routes || []);
       } catch (err) {
         setError(err.message || 'Failed to fetch settings.');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -60,55 +79,95 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl mb-2">Settings</h2>
-      {error && <p className="text-red-600">{error}</p>}
-      {!error && (
+    <Box className="p-6 max-w-3xl mx-auto">
+      {loading && (
+        <Box className="flex justify-center items-center mt-10">
+          <CircularProgress />
+          <Typography color="text.secondary" variant="body1">
+            Завантаження маршрутів...
+          </Typography>
+        </Box>
+      )}
+
+      {!loading && (
         <>
-          <p className="text-green-600">{message}</p>
-          <div className="mt-6">
-            <h3 className="text-xl mb-4">Saved Routes</h3>
-            {routes.length === 0 && <p>No saved routes found.</p>}
-            {routes.length > 0 && (
-              <div className="grid gap-4">
-                {routes.map((route, idx) => (
-                  <Card key={route.id || idx} className="shadow-md">
-                    <CardContent>
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        spacing={2}
-                        justifyContent="space-between"
-                      >
-                        <Typography variant="h6" component="div">
-                          {route.name || `Route #${idx + 1}`}
+          {error && (
+            <Typography color="error" className="mt-4">
+              {error}
+            </Typography>
+          )}
+          {!error && (
+            <>
+              <Typography color="success.main" className="mt-2">
+                {message}
+              </Typography>
+
+              <Divider className="my-6" />
+
+              <Typography variant="h6" gutterBottom>
+                Збережені маршрути
+              </Typography>
+
+              {routes.length === 0 && (
+                <Typography color="text.secondary">
+                  Немає збережених маршрутів.
+                </Typography>
+              )}
+              {routes.length > 0 && (
+                <Stack spacing={2} className="mt-4">
+                  {routes.map((route, idx) => (
+                    <Card
+                      key={route.id || idx}
+                      elevation={3}
+                      sx={{
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': { transform: 'scale(1.01)', boxShadow: 6 },
+                      }}
+                    >
+                      <CardContent>
+                        <Typography variant="h6">
+                          {route.name || `Маршрут #${idx + 1}`}
                         </Typography>
-                        <Stack direction="row" spacing={2} className="mt-2">
+                        {route.description && (
+                          <Typography variant="body2" color="text.secondary" mt={0.5}>
+                            {route.description}
+                          </Typography>
+                        )}
+                      </CardContent>
+
+                      <CardActions className="flex justify-end">
+                        <Tooltip title="Показати маршрут">
                           <Button
                             variant="contained"
                             color="primary"
+                            size="small"
+                            startIcon={<ShowIcon />}
                             onClick={() => handleShow(route.id)}
                           >
-                            Show
+                            Показати
                           </Button>
+                        </Tooltip>
+                        <Tooltip title="Видалити маршрут">
                           <Button
                             variant="outlined"
                             color="error"
+                            size="small"
+                            startIcon={<DeleteIcon />}
                             onClick={() => handleDelete(route.id)}
                           >
-                            Delete
+                            Видалити
                           </Button>
-                        </Stack>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+                        </Tooltip>
+                      </CardActions>
+                    </Card>
+                  ))}
+                </Stack>
+              )}
+            </>
+          )}
         </>
       )}
-    </div>
+    </Box>
   );
 };
 
