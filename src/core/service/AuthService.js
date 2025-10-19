@@ -98,6 +98,16 @@ class AuthService {
       }
     }
   }
+
+  static async forgotPassword(data) {
+    // data = { email }
+    return ApiService.request('account/forgot-password', 'POST', data);
+  }
+
+  static async resetPassword(data) {
+    // data = { token, new_password }
+    return ApiService.request('account/reset-password', 'POST', data);
+  }
 }
 
 export default AuthService;

@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import {
@@ -11,33 +11,63 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  Snackbar,
   TextField,
   Typography,
 } from '@mui/material';
 
-import { useAuth } from '@/core/context/AuthContext';
 import AuthService from '@/core/service/AuthService';
 
-const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const [errorMessages, setErrorMessages] = useState([]);
+const ResetPassword = () => {
+  const [searchParams] = useSearchParams();
+  const tokenFromUrl = searchParams.get('token') || '';
+  const [token] = useState(tokenFromUrl);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessages, setErrorMessages] = useState([]);
+  const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
+  const navigate = useNavigate();
 
-  const { login } = useAuth();
+  useEffect(() => {
+    if (!token) {
+      setErrorMessages(['Reset token is missing or invalid.']);
+    }
+  }, [token]);
+
+  const handleCloseSnack = (e, reason) => {
+    if (reason === 'clickaway') return;
+    setSnack(s => ({ ...s, open: false }));
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
-    setLoading(true);
     setErrorMessages([]);
 
+    // Client-side validation
+    const clientErrors = [];
+    if (!token) clientErrors.push('Missing token');
+    if (newPassword.length < 8)
+      clientErrors.push('Password must be at least 8 characters');
+    if (newPassword !== confirm) clientErrors.push('Passwords do not match');
+
+    if (clientErrors.length > 0) {
+      setErrorMessages(clientErrors);
+      return;
+    }
+
+    setLoading(true);
     try {
-      const response = await AuthService.login({ email, password });
-      login(response.access_token, response.refresh_token);
-      window.location.href = '/';
+      await AuthService.resetPassword({ token, new_password: newPassword });
+      setSnack({
+        open: true,
+        message: 'Password reset successfully. Redirecting to login...',
+        severity: 'success',
+      });
+      setTimeout(() => navigate('/login'), 1400);
     } catch (error) {
-      const messages = error.messages || [error.message];
+      // Handle backend validation errors
+      const messages = error.messages || [error.message || 'Failed to reset password'];
       setErrorMessages(messages);
     } finally {
       setLoading(false);
@@ -48,29 +78,31 @@ const LoginPage = () => {
     <Box className="flex justify-center items-center h-screen bg-gray-100">
       <Box className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
         <Typography variant="h4" className="mb-6 text-center text-primary">
-          Login
+          Reset Password
         </Typography>
+
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* Email */}
           <TextField
             fullWidth
-            label="Email"
-            type="email"
-            variant="outlined"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="bg-gray-50"
-          />
-          {/* Password */}
-          <TextField
-            fullWidth
-            label="Password"
+            label="New password"
             type="password"
             variant="outlined"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
+            value={newPassword}
+            onChange={e => setNewPassword(e.target.value)}
             className="bg-gray-50"
+            required
           />
+          <TextField
+            fullWidth
+            label="Confirm password"
+            type="password"
+            variant="outlined"
+            value={confirm}
+            onChange={e => setConfirm(e.target.value)}
+            className="bg-gray-50"
+            required
+          />
+
           {/* Error Messages */}
           {errorMessages.length > 0 && (
             <Alert severity="error" className="mt-4">
@@ -98,34 +130,40 @@ const LoginPage = () => {
               )}
             </Alert>
           )}
-          {/* Register Button */}
+
           <Button
             type="submit"
             variant="contained"
             color="primary"
             fullWidth
             className="mt-4 bg-primary hover:bg-primary-dark text-white"
-            disabled={loading}
+            disabled={loading || !token}
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Resetting password...' : 'Reset Password'}
           </Button>
         </form>
-        {/* Login Link */}
+
         <Typography variant="body2" className="mt-4 text-center text-gray-600">
-          Don&apos;t have an account?{' '}
-          <RouterLink to="/register" className="text-primary hover:underline">
-            Register
-          </RouterLink>
-        </Typography>
-        {/* Forgot password Link */}
-        <Typography variant="body2" className="mt-2 text-center">
-          <RouterLink to="/forgot-password" className="text-primary hover:underline">
-            Forgot password?
+          Remember your password?{' '}
+          <RouterLink to="/login" className="text-primary hover:underline">
+            Login
           </RouterLink>
         </Typography>
       </Box>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={snack.open}
+        autoHideDuration={4000}
+        onClose={handleCloseSnack}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseSnack} severity={snack.severity} variant="filled">
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
 
-export default LoginPage;
+export default ResetPassword;
