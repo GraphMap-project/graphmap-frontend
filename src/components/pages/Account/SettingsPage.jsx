@@ -79,94 +79,96 @@ const SettingsPage = () => {
   };
 
   return (
-    <Box className="p-6 max-w-3xl mx-auto">
-      {loading && (
-        <Box className="flex justify-center items-center mt-10">
-          <CircularProgress />
-          <Typography color="text.secondary" variant="body1">
-            Завантаження маршрутів...
-          </Typography>
-        </Box>
-      )}
-
-      {!loading && (
-        <>
-          {error && (
-            <Typography color="error" className="mt-4">
-              {error}
+    <Box className="h-full overflow-y-auto">
+      <Box className="p-6 max-w-3xl mx-auto">
+        {loading && (
+          <Box className="flex justify-center items-center mt-10">
+            <CircularProgress />
+            <Typography color="text.secondary" variant="body1">
+              Завантаження маршрутів...
             </Typography>
-          )}
-          {!error && (
-            <>
-              <Typography color="success.main" className="mt-2">
-                {message}
+          </Box>
+        )}
+
+        {!loading && (
+          <>
+            {error && (
+              <Typography color="error" className="mt-4">
+                {error}
               </Typography>
-
-              <Divider className="my-6" />
-
-              <Typography variant="h6" gutterBottom>
-                Збережені маршрути
-              </Typography>
-
-              {routes.length === 0 && (
-                <Typography color="text.secondary">
-                  Немає збережених маршрутів.
+            )}
+            {!error && (
+              <>
+                <Typography color="success.main" className="mt-2">
+                  {message}
                 </Typography>
-              )}
-              {routes.length > 0 && (
-                <Stack spacing={2} className="mt-4">
-                  {routes.map((route, idx) => (
-                    <Card
-                      key={route.id || idx}
-                      elevation={3}
-                      sx={{
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        '&:hover': { transform: 'scale(1.01)', boxShadow: 6 },
-                      }}
-                    >
-                      <CardContent>
-                        <Typography variant="h6">
-                          {route.name || `Маршрут #${idx + 1}`}
-                        </Typography>
-                        {route.description && (
-                          <Typography variant="body2" color="text.secondary" mt={0.5}>
-                            {route.description}
-                          </Typography>
-                        )}
-                      </CardContent>
 
-                      <CardActions className="flex justify-end">
-                        <Tooltip title="Показати маршрут">
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            size="small"
-                            startIcon={<ShowIcon />}
-                            onClick={() => handleShow(route.id)}
-                          >
-                            Показати
-                          </Button>
-                        </Tooltip>
-                        <Tooltip title="Видалити маршрут">
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            startIcon={<DeleteIcon />}
-                            onClick={() => handleDelete(route.id)}
-                          >
-                            Видалити
-                          </Button>
-                        </Tooltip>
-                      </CardActions>
-                    </Card>
-                  ))}
-                </Stack>
-              )}
-            </>
-          )}
-        </>
-      )}
+                <Divider className="my-6" />
+
+                <Typography variant="h6" gutterBottom>
+                  Збережені маршрути
+                </Typography>
+
+                {routes.length === 0 && (
+                  <Typography color="text.secondary">
+                    Немає збережених маршрутів.
+                  </Typography>
+                )}
+                {routes.length > 0 && (
+                  <Stack spacing={2} className="mt-4">
+                    {routes.map((route, idx) => (
+                      <Card
+                        key={route.id || idx}
+                        elevation={3}
+                        sx={{
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          '&:hover': { transform: 'scale(1.01)', boxShadow: 6 },
+                        }}
+                      >
+                        <CardContent>
+                          <Typography variant="h6">
+                            {route.name || `Маршрут #${idx + 1}`}
+                          </Typography>
+                          {route.description && (
+                            <Typography variant="body2" color="text.secondary" mt={0.5}>
+                              {route.description}
+                            </Typography>
+                          )}
+                        </CardContent>
+
+                        <CardActions className="flex justify-end">
+                          <Tooltip title="Показати маршрут">
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              size="small"
+                              startIcon={<ShowIcon />}
+                              onClick={() => handleShow(route.id)}
+                            >
+                              Показати
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Видалити маршрут">
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              startIcon={<DeleteIcon />}
+                              onClick={() => handleDelete(route.id)}
+                            >
+                              Видалити
+                            </Button>
+                          </Tooltip>
+                        </CardActions>
+                      </Card>
+                    ))}
+                  </Stack>
+                )}
+              </>
+            )}
+          </>
+        )}
+      </Box>
     </Box>
   );
 };

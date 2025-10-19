@@ -287,7 +287,7 @@ const MapPage = () => {
   };
 
   return (
-    <Box className="flex h-[85vh] flex-col relative">
+    <Box className="flex h-full flex-col relative">
       <SideMenu open={sidebarOpen}>
         <Box className="flex justify-between items-center w-full mb-[2px]">
           <Typography variant="h6">Меню</Typography>

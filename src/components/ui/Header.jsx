@@ -40,7 +40,7 @@ const Header = () => {
   };
 
   return (
-    <AppBar position="static" className="bg-primary h-[10%] flex justify-center">
+    <AppBar position="static" className="bg-primary">
       <Toolbar>
         <Typography variant="h6" component="div" className="grow">
           <Link component={NavLink} to="/" underline="none" className="text-white">
