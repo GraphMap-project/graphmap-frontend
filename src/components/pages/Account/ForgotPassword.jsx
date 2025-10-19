@@ -22,14 +22,15 @@ const ForgotPassword = () => {
     if (!email) return;
     setLoading(true);
     try {
-      const { detail } = await AuthService.forgotPassword({ email });
+      const { message } = await AuthService.forgotPassword({ email });
+
       setSnack({
         open: true,
-        message: detail,
+        message: message,
         severity: 'success',
       });
       setEmail('');
-      navigate('/login');
+      setTimeout(() => navigate('/login'), 1400);
     } catch (err) {
       setSnack({
         open: true,
