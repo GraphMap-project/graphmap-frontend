@@ -120,9 +120,9 @@ const MapPage = () => {
       setSidebarOpen(true);
 
       // Optionally clear point names if not available
-      setStartPointName('');
-      setEndPointName('');
-      setIntermediatePointNames([]);
+      setStartPointName(selectedRoute.start_point_name || '');
+      setEndPointName(selectedRoute.end_point_name || '');
+      setIntermediatePointNames(selectedRoute.intermediate_point_names || []);
     }
   }, [selectedRoute]);
 
@@ -216,6 +216,9 @@ const MapPage = () => {
         intermediate_points: intermediatePoints.map(point => [point.lat, point.lng]),
         end_point: [markers[1].lat, markers[1].lng],
         threats: threats.map(zone => zone.map(coord => [coord.lat, coord.lng])),
+        start_point_name: startPointName,
+        end_point_name: endPointName,
+        intermediate_point_names: intermediatePointNames,
       };
 
       console.log('Sending coordinates:', data);
@@ -414,7 +417,7 @@ const MapPage = () => {
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleSnackBarClose}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert
           onClose={handleSnackBarClose}
