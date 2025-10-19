@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import { RegisterPage } from './components/pages';
 import { LoginPage } from './components/pages';
 import { SettingsPage } from './components/pages';
+import { ForgotPassword } from './components/pages';
 import { MapPage } from './components/pages/Map';
 import { Footer, Header } from './components/ui';
 
@@ -15,6 +16,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
       <Footer />
     </>

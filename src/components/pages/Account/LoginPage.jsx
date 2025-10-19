@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { Link as RouterLink } from 'react-router-dom';
+
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import {
   Alert,
@@ -111,15 +113,15 @@ const LoginPage = () => {
         {/* Login Link */}
         <Typography variant="body2" className="mt-4 text-center text-gray-600">
           Don&apos;t have an account?{' '}
-          <a href="/register" className="text-primary hover:underline">
+          <RouterLink to="/register" className="text-primary hover:underline">
             Register
-          </a>
+          </RouterLink>
         </Typography>
         {/* Forgot password Link */}
         <Typography variant="body2" className="mt-2 text-center">
-          <a href="/forgot-password" className="text-primary hover:underline">
+          <RouterLink to="/forgot-password" className="text-primary hover:underline">
             Forgot password?
-          </a>
+          </RouterLink>
         </Typography>
       </Box>
     </Box>
