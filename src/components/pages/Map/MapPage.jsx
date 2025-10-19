@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { MapContainer, Marker, Polyline, TileLayer } from 'react-leaflet';
+import { MapContainer, Marker, Polygon, Polyline, TileLayer } from 'react-leaflet';
 import { FeatureGroup } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 
@@ -105,6 +105,11 @@ const MapPage = () => {
       setIntermediatePoints(
         (selectedRoute.intermediate_points || []).map(([lat, lng]) => ({ lat, lng })),
       );
+      // Set threats
+      const threatZones = (selectedRoute.threats || []).map(zone =>
+        zone.map(([lat, lng]) => ({ lat, lng })),
+      );
+      setThreats(threatZones);
 
       // Set route path and distance
       setRoutePath(selectedRoute.route_coords || []);
@@ -196,6 +201,7 @@ const MapPage = () => {
     setEndPointName('');
     setIntermediatePointNames([]);
     setRouteId(null);
+    setThreats([]);
   };
 
   const getShortestPath = async () => {
@@ -460,6 +466,18 @@ const MapPage = () => {
                 />
               ),
           )}
+
+          {threats.map((zone, index) => (
+            <Polygon
+              key={`threat-${index}`}
+              positions={zone}
+              pathOptions={{
+                color: 'red',
+                fillColor: 'red',
+                fillOpacity: 0.3,
+              }}
+            />
+          ))}
 
           {routePath.length > 0 && (
             <Polyline positions={routePath} pathOptions={{ color: 'blue', weight: 2 }} />
