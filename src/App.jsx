@@ -5,6 +5,7 @@ import { LoginPage } from './components/pages';
 import { SettingsPage } from './components/pages';
 import { ForgotPassword } from './components/pages';
 import { ResetPassword } from './components/pages';
+import { AdminPage } from './components/pages';
 import { MapPage } from './components/pages/Map';
 import { Footer, Header } from './components/ui';
 
@@ -19,6 +20,7 @@ function App() {
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
       <Footer />
     </>
