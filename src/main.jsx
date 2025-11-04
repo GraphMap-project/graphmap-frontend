@@ -11,15 +11,15 @@ import { AuthProvider } from './core/context/AuthContext.jsx';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <Router>
-      <AuthProvider>
-        <AppContextProvider>
-          <RouteProvider>
-            <App />
-          </RouteProvider>
-        </AppContextProvider>
-      </AuthProvider>
-    </Router>
-  </StrictMode>,
+  // <StrictMode>
+  <Router>
+    <AuthProvider>
+      <AppContextProvider>
+        <RouteProvider>
+          <App />
+        </RouteProvider>
+      </AppContextProvider>
+    </AuthProvider>
+  </Router>,
+  // </StrictMode>,
 );
