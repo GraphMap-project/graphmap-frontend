@@ -253,7 +253,6 @@ const MapPage = () => {
     setEndPointName('');
     setIntermediatePointNames([]);
     setRouteId(null);
-    setThreats([]);
   };
 
   const handleThreatClick = async threat => {
