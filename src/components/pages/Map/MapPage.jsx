@@ -86,22 +86,25 @@ const MapPage = () => {
   });
 
   useEffect(() => {
-    const fetchThreats = async () => {
-      try {
-        const data = await ThreatService.getAll();
-        const mapped = data.map(t => ({
-          id: t.id,
-          coords: t.location.map(([lat, lng]) => ({ lat, lng })),
-        }));
+    // Завантажуємо загрози тільки якщо немає selectedRoute
+    if (!selectedRoute) {
+      const fetchThreats = async () => {
+        try {
+          const data = await ThreatService.getAll();
+          const mapped = data.map(t => ({
+            id: t.id,
+            coords: t.location.map(([lat, lng]) => ({ lat, lng })),
+          }));
 
-        setThreats(mapped);
-      } catch (error) {
-        console.error('Помилка при завантаженні загроз:', error);
-      }
-    };
+          setThreats(mapped);
+        } catch (error) {
+          console.error('Помилка при завантаженні загроз:', error);
+        }
+      };
 
-    fetchThreats();
-  }, []);
+      fetchThreats();
+    }
+  }, [selectedRoute]);
 
   useEffect(() => {
     if (selectedRoute) {
@@ -124,10 +127,11 @@ const MapPage = () => {
       setIntermediatePoints(
         (selectedRoute.intermediate_points || []).map(([lat, lng]) => ({ lat, lng })),
       );
-      // Set threats
-      const threatZones = (selectedRoute.threats || []).map(zone =>
-        zone.map(([lat, lng]) => ({ lat, lng })),
-      );
+      // Set threats - виправлення: перетворюємо в правильний формат { id, coords }
+      const threatZones = (selectedRoute.threats || []).map((zone, index) => ({
+        id: `route-threat-${selectedRoute.id}-${index}`,
+        coords: zone.map(([lat, lng]) => ({ lat, lng })),
+      }));
       setThreats(threatZones);
 
       // Set route path and distance
@@ -285,7 +289,9 @@ const MapPage = () => {
         start_point: [markers[0].lat, markers[0].lng],
         intermediate_points: intermediatePoints.map(point => [point.lat, point.lng]),
         end_point: [markers[1].lat, markers[1].lng],
-        threats: threats.map(zone => zone.map(coord => [coord.lat, coord.lng])),
+        threats: threats.map(threat =>
+          threat.coords.map(coord => [coord.lat, coord.lng]),
+        ),
         start_point_name: startPointName,
         end_point_name: endPointName,
         intermediate_point_names: intermediatePointNames,

@@ -39,11 +39,22 @@ const Header = () => {
     setAnchorEl(null);
   };
 
+  const handleLogoClick = () => {
+    // Перезавантажуємо сторінку при кліку на логотип
+    window.location.href = '/';
+  };
+
   return (
     <AppBar position="static" className="bg-primary">
       <Toolbar>
         <Typography variant="h6" component="div" className="grow">
-          <Link component={NavLink} to="/" underline="none" className="text-white">
+          <Link
+            component={NavLink}
+            to="/"
+            underline="none"
+            className="text-white"
+            onClick={handleLogoClick}
+          >
             GraphMap
           </Link>
         </Typography>
