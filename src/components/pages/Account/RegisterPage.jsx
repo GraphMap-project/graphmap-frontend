@@ -5,10 +5,14 @@ import {
   Alert,
   Box,
   Button,
+  FormControl,
+  InputLabel,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
+  MenuItem,
+  Select,
   TextField,
   Typography,
 } from '@mui/material';
@@ -19,8 +23,9 @@ import AuthService from '@/core/service/AuthService';
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessages, setErrorMessages] = useState([]);
+  const [role, setRole] = useState('threat-responsible');
 
+  const [errorMessages, setErrorMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
@@ -31,7 +36,7 @@ const RegisterPage = () => {
     setErrorMessages([]);
 
     try {
-      const response = await AuthService.register({ email, password });
+      const response = await AuthService.register({ email, password, role });
       login(response.access_token, response.refresh_token);
       window.location.href = '/';
     } catch (error) {
@@ -69,6 +74,19 @@ const RegisterPage = () => {
             onChange={e => setPassword(e.target.value)}
             className="bg-gray-50"
           />
+          {/* Role Selection */}
+          <FormControl fullWidth>
+            <InputLabel id="role-label">Role</InputLabel>
+            <Select
+              labelId="role-label"
+              value={role}
+              label="Role"
+              onChange={e => setRole(e.target.value)}
+            >
+              <MenuItem value="threat-responsible">Threat Responsible</MenuItem>
+              <MenuItem value="military">Military</MenuItem>
+            </Select>
+          </FormControl>
           {/* Error Messages */}
           {errorMessages.length > 0 && (
             <Alert severity="error" className="mt-4">

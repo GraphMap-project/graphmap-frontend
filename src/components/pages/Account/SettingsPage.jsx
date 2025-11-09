@@ -45,7 +45,7 @@ const SettingsPage = () => {
     const fetchSettings = async () => {
       try {
         const response = await AuthService.requestWithAuth('account/settings');
-        setMessage(`Welcome, ${response.email || 'user'}!`);
+        setMessage(`Welcome, ${response.email || 'user'}! Your role: ${response.role}`);
         const routesResponse = await AuthService.requestWithAuth('routes');
         setRoutes(routesResponse.routes || []);
       } catch (err) {

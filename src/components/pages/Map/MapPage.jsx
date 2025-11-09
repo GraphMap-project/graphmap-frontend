@@ -29,6 +29,7 @@ import { SideMenu } from '@/components/ui';
 import { useAppContext } from '@/core/context/AppContext';
 import { useRoute } from '@/core/context/RouteContext';
 import RouteService from '@/core/service/RouteService';
+import ThreatService from '@/core/service/ThreatService';
 import { cn } from '@/core/utils';
 
 import { endIcon, intermediateIcon, startIcon } from './constants/mapIcons';
@@ -85,6 +86,24 @@ const MapPage = () => {
   });
 
   useEffect(() => {
+    const fetchThreats = async () => {
+      try {
+        const data = await ThreatService.getAll();
+        const mapped = data.map(t => ({
+          id: t.id,
+          coords: t.location.map(([lat, lng]) => ({ lat, lng })),
+        }));
+
+        setThreats(mapped);
+      } catch (error) {
+        console.error('Помилка при завантаженні загроз:', error);
+      }
+    };
+
+    fetchThreats();
+  }, []);
+
+  useEffect(() => {
     if (selectedRoute) {
       if (selectedRoute.start_point && selectedRoute.end_point) {
         setMarkers([
@@ -126,7 +145,7 @@ const MapPage = () => {
     }
   }, [selectedRoute]);
 
-  const handleDrawCreate = e => {
+  const handleDrawCreate = async e => {
     const layer = e.layer;
     const geojson = layer.toGeoJSON();
     const type = geojson.geometry.type;
@@ -142,7 +161,33 @@ const MapPage = () => {
     }
 
     if (latlngs.length > 0) {
-      setThreats(prev => [...prev, latlngs]);
+      try {
+        const newThreat = {
+          type: type,
+          description: 'Polygon threat zone',
+          location: latlngs.map(coord => [coord.lat, coord.lng]),
+          created_by: 'anonymous',
+        };
+
+        const savedThreat = await ThreatService.create(newThreat);
+        setThreats(prev => [...prev, { id: savedThreat.id, coords: latlngs }]);
+
+        if (layer && typeof layer.remove === 'function') {
+          layer.remove();
+        }
+
+        setSnackbar({
+          open: true,
+          message: 'Загрозу збережено!',
+          severity: 'success',
+        });
+      } catch (error) {
+        setSnackbar({
+          open: true,
+          message: 'Помилка при збереженні загрози',
+          severity: 'error',
+        });
+      }
     }
   };
 
@@ -202,6 +247,27 @@ const MapPage = () => {
     setIntermediatePointNames([]);
     setRouteId(null);
     setThreats([]);
+  };
+
+  const handleThreatClick = async threat => {
+    const confirmed = window.confirm('Видалити цю загрозу?');
+    if (!confirmed) return;
+
+    try {
+      await ThreatService.delete(threat.id);
+      setThreats(prev => prev.filter(t => t.id !== threat.id));
+      setSnackbar({
+        open: true,
+        message: 'Загрозу видалено',
+        severity: 'success',
+      });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: 'Не вдалося видалити загрозу',
+        severity: 'error',
+      });
+    }
   };
 
   const getShortestPath = async () => {
@@ -470,14 +536,18 @@ const MapPage = () => {
               ),
           )}
 
-          {threats.map((zone, index) => (
+          {/* Загрози */}
+          {threats.map((threat, index) => (
             <Polygon
-              key={`threat-${index}`}
-              positions={zone}
+              key={threat.id || `threat-${index}`}
+              positions={threat.coords}
               pathOptions={{
                 color: 'red',
                 fillColor: 'red',
                 fillOpacity: 0.3,
+              }}
+              eventHandlers={{
+                click: () => handleThreatClick(threat),
               }}
             />
           ))}
