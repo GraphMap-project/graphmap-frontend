@@ -9,7 +9,7 @@ class RouteService {
   }
 
   static async create(threat) {
-    return ApiService.request(this.baseEndpoint, 'POST', threat);
+    return AuthService.requestWithAuth(this.baseEndpoint, 'POST', threat);
   }
   static async delete(threatId) {
     return AuthService.requestWithAuth(`${this.baseEndpoint}/${threatId}`, 'DELETE');

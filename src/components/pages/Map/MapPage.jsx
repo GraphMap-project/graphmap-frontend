@@ -166,7 +166,6 @@ const MapPage = () => {
           type: type,
           description: 'Polygon threat zone',
           location: latlngs.map(coord => [coord.lat, coord.lng]),
-          created_by: 'anonymous',
         };
 
         const savedThreat = await ThreatService.create(newThreat);
@@ -182,9 +181,13 @@ const MapPage = () => {
           severity: 'success',
         });
       } catch (error) {
+        if (layer && typeof layer.remove === 'function') {
+          layer.remove();
+        }
+
         setSnackbar({
           open: true,
-          message: 'Помилка при збереженні загрози',
+          message: error.messages[0] || 'Помилка при збереженні загрози',
           severity: 'error',
         });
       }
@@ -262,9 +265,10 @@ const MapPage = () => {
         severity: 'success',
       });
     } catch (error) {
+      console.log(error);
       setSnackbar({
         open: true,
-        message: 'Не вдалося видалити загрозу',
+        message: error.messages[0] || 'Не вдалося видалити загрозу',
         severity: 'error',
       });
     }
@@ -513,8 +517,11 @@ const MapPage = () => {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
           />
-          <AddMarker onAddMarker={handleAddMarker} />
-
+          <AddMarker
+            onAddMarker={handleAddMarker}
+            markers={markers}
+            intermediatePoints={intermediatePoints}
+          />
           {markers.map((position, index) => (
             <Marker
               key={index}
@@ -522,7 +529,6 @@ const MapPage = () => {
               icon={index === 0 ? startIcon : endIcon}
             />
           ))}
-
           {/* Промежуточные маркеры */}
           {intermediatePoints.map(
             (point, index) =>
@@ -535,7 +541,6 @@ const MapPage = () => {
                 />
               ),
           )}
-
           {/* Загрози */}
           {threats.map((threat, index) => (
             <Polygon
@@ -551,16 +556,15 @@ const MapPage = () => {
               }}
             />
           ))}
-
           {routePath.length > 0 && (
             <Polyline positions={routePath} pathOptions={{ color: 'blue', weight: 2 }} />
           )}
-
           <FeatureGroup>
             <EditControl
               position="topright"
               onCreated={handleDrawCreate}
               onDeleted={handleDrawDelete}
+              edit={{ edit: false }}
               draw={{
                 rectangle: false,
                 circle: false,

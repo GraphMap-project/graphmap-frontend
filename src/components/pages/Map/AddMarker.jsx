@@ -2,10 +2,17 @@ import { useMapEvents } from 'react-leaflet';
 
 import { checkIfInsideUkraine, checkIfWater } from './utils/geolocationUtils';
 
-const AddMarker = ({ onAddMarker }) => {
+const AddMarker = ({ onAddMarker, markers, intermediatePoints }) => {
   // eslint-disable-next-line no-unused-vars
   const map = useMapEvents({
     async click(e) {
+      const hasEmptyIntermediate = intermediatePoints.some(p => !p.lat || !p.lng);
+      const canAddMarker = markers.length < 2 || hasEmptyIntermediate;
+
+      if (!canAddMarker) {
+        return;
+      }
+
       const lat = e.latlng.lat;
       const lng = e.latlng.lng;
 

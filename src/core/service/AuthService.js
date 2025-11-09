@@ -53,6 +53,14 @@ class AuthService {
     }
   }
 
+  static isUnauthorizedError(error) {
+    return (
+      error?.status === 401 ||
+      error?.message?.includes('401') ||
+      error?.message?.includes('Unauthorized')
+    );
+  }
+
   static async requestWithAuth(
     endpoint,
     method = 'GET',
@@ -72,29 +80,25 @@ class AuthService {
         responseType,
       );
     } catch (error) {
-      if (
-        error.status === 401 ||
-        error.message.includes('401') ||
-        error.message.includes('Unauthorized')
-      ) {
-        try {
-          accessToken = await this.refreshToken();
+      if (!this.isUnauthorizedError(error)) throw error;
+      try {
+        accessToken = await this.refreshToken();
 
-          return await ApiService.request(
-            endpoint,
-            method,
-            data,
-            {
-              Authorization: `Bearer ${accessToken}`,
-            },
-            responseType,
-          );
-        } catch (refreshError) {
+        return await ApiService.request(
+          endpoint,
+          method,
+          data,
+          {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          responseType,
+        );
+      } catch (refreshError) {
+        if (this.isUnauthorizedError(refreshError)) {
           this.logout();
           throw new Error('Session expired. Please log in again.');
         }
-      } else {
-        throw error;
+        throw refreshError;
       }
     }
   }
