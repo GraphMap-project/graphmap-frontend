@@ -16,10 +16,12 @@ import {
 } from '@mui/material';
 
 import { useAuth } from '@/core/context/AuthContext';
+import { useRoute } from '@/core/context/RouteContext';
 import ThreatService from '@/core/service/ThreatService';
 
 const ThreatRequestsPage = () => {
   const { user, loading: authLoading } = useAuth();
+  const { setPreviewThreat } = useRoute();
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,6 +101,49 @@ const ThreatRequestsPage = () => {
     }
   };
 
+  const handlePreview = async request => {
+    if (request.action === 'create' && request.location) {
+      // Перетворюємо локацію в правильний формат для нової загрози
+      const threat = {
+        id: request.id,
+        coords: request.location.map(([lat, lng]) => ({ lat, lng })),
+        type: request.threat_type,
+        description: request.description,
+      };
+      setPreviewThreat(threat);
+      navigate('/');
+    } else if (request.action === 'delete' && request.threat_id) {
+      // Завантажуємо існуючу загрозу для передогляду
+      try {
+        const threats = await ThreatService.getAll();
+        const threat = threats.find(t => t.id === request.threat_id);
+
+        if (threat) {
+          const formattedThreat = {
+            id: threat.id,
+            coords: threat.location.map(([lat, lng]) => ({ lat, lng })),
+            type: threat.type,
+            description: threat.description,
+          };
+          setPreviewThreat(formattedThreat);
+          navigate('/');
+        } else {
+          setSnackbar({
+            open: true,
+            message: 'Загрозу не знайдено',
+            severity: 'error',
+          });
+        }
+      } catch (err) {
+        setSnackbar({
+          open: true,
+          message: 'Помилка при завантаженні загрози',
+          severity: 'error',
+        });
+      }
+    }
+  };
+
   const handleSnackbarClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -163,6 +208,14 @@ const ThreatRequestsPage = () => {
                 </Typography>
 
                 <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    size="small"
+                    onClick={() => handlePreview(request)}
+                  >
+                    Переглянути
+                  </Button>
                   <Button
                     variant="contained"
                     color="success"

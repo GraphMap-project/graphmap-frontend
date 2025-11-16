@@ -27,6 +27,7 @@ import {
 import { SideMenu } from '@/components/ui';
 
 import { useAppContext } from '@/core/context/AppContext';
+import { useAuth } from '@/core/context/AuthContext';
 import { useRoute } from '@/core/context/RouteContext';
 import RouteService from '@/core/service/RouteService';
 import ThreatService from '@/core/service/ThreatService';
@@ -45,7 +46,8 @@ const ukraineBounds = [
 
 const MapPage = () => {
   const { coords, setStartCoords, setEndCoords, clearCoords } = useAppContext();
-  const { selectedRoute } = useRoute();
+  const { selectedRoute, previewThreat, setPreviewThreat } = useRoute();
+  const { user } = useAuth();
 
   const [markers, setMarkers] = useState([]);
   // Point names
@@ -86,25 +88,36 @@ const MapPage = () => {
   });
 
   useEffect(() => {
+    // Завантажуємо всі загрози
+    const fetchThreats = async () => {
+      try {
+        const data = await ThreatService.getAll();
+        const mapped = data.map(t => ({
+          id: t.id,
+          coords: t.location.map(([lat, lng]) => ({ lat, lng })),
+        }));
+
+        // Якщо є previewThreat і його немає в списку - додаємо
+        if (previewThreat) {
+          const exists = mapped.some(t => t.id === previewThreat.id);
+          if (!exists) {
+            setThreats([...mapped, previewThreat]);
+          } else {
+            setThreats(mapped);
+          }
+        } else {
+          setThreats(mapped);
+        }
+      } catch (error) {
+        console.error('Помилка при завантаженні загроз:', error);
+      }
+    };
+
     // Завантажуємо загрози тільки якщо немає selectedRoute
     if (!selectedRoute) {
-      const fetchThreats = async () => {
-        try {
-          const data = await ThreatService.getAll();
-          const mapped = data.map(t => ({
-            id: t.id,
-            coords: t.location.map(([lat, lng]) => ({ lat, lng })),
-          }));
-
-          setThreats(mapped);
-        } catch (error) {
-          console.error('Помилка при завантаженні загроз:', error);
-        }
-      };
-
       fetchThreats();
     }
-  }, [selectedRoute]);
+  }, [selectedRoute, previewThreat]);
 
   useEffect(() => {
     if (selectedRoute) {
@@ -263,6 +276,7 @@ const MapPage = () => {
     setEndPointName('');
     setIntermediatePointNames([]);
     setRouteId(null);
+    setPreviewThreat(null);
   };
 
   const handleThreatClick = async threat => {
@@ -573,40 +587,43 @@ const MapPage = () => {
               key={threat.id || `threat-${index}`}
               positions={threat.coords}
               pathOptions={{
-                color: 'red',
-                fillColor: 'red',
+                color: previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
+                fillColor:
+                  previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
                 fillOpacity: 0.3,
               }}
               eventHandlers={{
-                click: () => handleThreatClick(threat),
+                click: () => !previewThreat && handleThreatClick(threat),
               }}
             />
           ))}
           {routePath.length > 0 && (
             <Polyline positions={routePath} pathOptions={{ color: 'blue', weight: 2 }} />
           )}
-          <FeatureGroup>
-            <EditControl
-              position="topright"
-              onCreated={handleDrawCreate}
-              onDeleted={handleDrawDelete}
-              edit={{ edit: false }}
-              draw={{
-                rectangle: false,
-                circle: false,
-                circlemarker: false,
-                marker: false,
-                polyline: true,
-                polygon: {
-                  allowIntersection: false,
-                  showArea: false,
-                  shapeOptions: {
-                    color: 'red',
+          {user && (
+            <FeatureGroup>
+              <EditControl
+                position="topright"
+                onCreated={handleDrawCreate}
+                onDeleted={handleDrawDelete}
+                edit={{ edit: false }}
+                draw={{
+                  rectangle: false,
+                  circle: false,
+                  circlemarker: false,
+                  marker: false,
+                  polyline: true,
+                  polygon: {
+                    allowIntersection: false,
+                    showArea: false,
+                    shapeOptions: {
+                      color: 'red',
+                    },
                   },
-                },
-              }}
-            />
-          </FeatureGroup>
+                }}
+              />
+            </FeatureGroup>
+          )}
         </MapContainer>
       </Box>
     </Box>
