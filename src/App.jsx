@@ -8,6 +8,7 @@ import { SettingsPage } from './components/pages';
 import { ForgotPassword } from './components/pages';
 import { ResetPassword } from './components/pages';
 import { AdminPage } from './components/pages';
+import { ThreatRequestsPage } from './components/pages';
 import { MapPage } from './components/pages/Map';
 import { Footer, Header } from './components/ui';
 
@@ -24,6 +25,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/threat-requests" element={<ThreatRequestsPage />} />
         </Routes>
       </Box>
       <Footer />

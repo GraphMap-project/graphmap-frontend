@@ -172,18 +172,28 @@ const MapPage = () => {
           location: latlngs.map(coord => [coord.lat, coord.lng]),
         };
 
-        const savedThreat = await ThreatService.create(newThreat);
-        setThreats(prev => [...prev, { id: savedThreat.id, coords: latlngs }]);
+        const response = await ThreatService.create(newThreat);
+        // Перевіряємо, чи є request_id у відповіді (для military ролі)
+        if (response.request_id) {
+          // Запит на перевірку
+          setSnackbar({
+            open: true,
+            message: 'Запит на створення загрози відправлено на перевірку',
+            severity: 'info',
+          });
+        } else {
+          // Загроза створена безпосередньо
+          setThreats(prev => [...prev, { id: response.id, coords: latlngs }]);
+          setSnackbar({
+            open: true,
+            message: 'Загрозу створено!',
+            severity: 'success',
+          });
+        }
 
         if (layer && typeof layer.remove === 'function') {
           layer.remove();
         }
-
-        setSnackbar({
-          open: true,
-          message: 'Загрозу збережено!',
-          severity: 'success',
-        });
       } catch (error) {
         if (layer && typeof layer.remove === 'function') {
           layer.remove();
@@ -260,18 +270,29 @@ const MapPage = () => {
     if (!confirmed) return;
 
     try {
-      await ThreatService.delete(threat.id);
-      setThreats(prev => prev.filter(t => t.id !== threat.id));
-      setSnackbar({
-        open: true,
-        message: 'Загрозу видалено',
-        severity: 'success',
-      });
+      const response = await ThreatService.delete(threat.id);
+      // Перевіряємо, чи є request_id у відповіді (для military ролі)
+      if (response.request_id) {
+        // Запит на видалення
+        setSnackbar({
+          open: true,
+          message: 'Запит на видалення загрози відправлено на перевірку',
+          severity: 'info',
+        });
+      } else {
+        // Загроза видалена безпосередньо
+        setThreats(prev => prev.filter(t => t.id !== threat.id));
+        setSnackbar({
+          open: true,
+          message: 'Загрозу видалено',
+          severity: 'success',
+        });
+      }
     } catch (error) {
       console.log(error);
       setSnackbar({
         open: true,
-        message: error.messages[0] || 'Не вдалося видалити загрозу',
+        message: error.messages?.[0] || 'Не вдалося видалити загрозу',
         severity: 'error',
       });
     }

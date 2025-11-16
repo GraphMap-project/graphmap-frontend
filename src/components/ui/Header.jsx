@@ -44,6 +44,11 @@ const Header = () => {
     window.location.href = '/';
   };
 
+  const handleThreatRequests = () => {
+    navigate('/threat-requests');
+    setAnchorEl(null);
+  };
+
   return (
     <AppBar position="static" className="bg-primary">
       <Toolbar>
@@ -71,6 +76,9 @@ const Header = () => {
                 onClose={handleAvatarClose}
               >
                 <MenuItem onClick={handleSettings}>Settings</MenuItem>
+                {user.role === 'threat-responsible' && (
+                  <MenuItem onClick={handleThreatRequests}>Threat Requests</MenuItem>
+                )}
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </>
