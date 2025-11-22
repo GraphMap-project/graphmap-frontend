@@ -106,7 +106,7 @@ const ThreatRequestsPage = () => {
       // Перетворюємо локацію в правильний формат для нової загрози
       const threat = {
         id: request.id,
-        coords: request.location.map(([lat, lng]) => ({ lat, lng })),
+        coords: request.location,
         type: request.threat_type,
         description: request.description,
       };
@@ -121,7 +121,7 @@ const ThreatRequestsPage = () => {
         if (threat) {
           const formattedThreat = {
             id: threat.id,
-            coords: threat.location.map(([lat, lng]) => ({ lat, lng })),
+            coords: threat.location,
             type: threat.type,
             description: threat.description,
           };

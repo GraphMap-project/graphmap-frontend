@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { MapContainer, Marker, Polygon, Polyline, TileLayer } from 'react-leaflet';
-import { FeatureGroup } from 'react-leaflet';
+import { FeatureGroup, Tooltip } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 
 import { AddMarker, SaveRouteDialog } from '.';
@@ -94,7 +94,7 @@ const MapPage = () => {
         const data = await ThreatService.getAll();
         const mapped = data.map(t => ({
           id: t.id,
-          coords: t.location.map(([lat, lng]) => ({ lat, lng })),
+          coords: t.location,
         }));
 
         // Якщо є previewThreat і його немає в списку - додаємо
@@ -143,7 +143,7 @@ const MapPage = () => {
       // Set threats - виправлення: перетворюємо в правильний формат { id, coords }
       const threatZones = (selectedRoute.threats || []).map((zone, index) => ({
         id: `route-threat-${selectedRoute.id}-${index}`,
-        coords: zone.map(([lat, lng]) => ({ lat, lng })),
+        coords: zone,
       }));
       setThreats(threatZones);
 
@@ -179,24 +179,37 @@ const MapPage = () => {
 
     if (latlngs.length > 0) {
       try {
+        // Отримуємо назви населених пунктів для кожної вершини
+        const names = await Promise.all(
+          latlngs.map(coord => getLandmarkName(coord.lat, coord.lng)),
+        );
+
+        // Формуємо масив з назвами
+        const locationWithNames = latlngs.map((coord, idx) => ({
+          lat: coord.lat,
+          lng: coord.lng,
+          name: names[idx] || '',
+        }));
+
         const newThreat = {
           type: type,
           description: 'Polygon threat zone',
-          location: latlngs.map(coord => [coord.lat, coord.lng]),
+          location: locationWithNames,
         };
 
         const response = await ThreatService.create(newThreat);
         // Перевіряємо, чи є request_id у відповіді (для military ролі)
         if (response.request_id) {
-          // Запит на перевірку
           setSnackbar({
             open: true,
             message: 'Запит на створення загрози відправлено на перевірку',
             severity: 'info',
           });
         } else {
-          // Загроза створена безпосередньо
-          setThreats(prev => [...prev, { id: response.id, coords: latlngs }]);
+          setThreats(prev => [
+            ...prev,
+            { id: response.id, coords: locationWithNames }, // <-- тут має бути locationWithNames
+          ]);
           setSnackbar({
             open: true,
             message: 'Загрозу створено!',
@@ -583,19 +596,35 @@ const MapPage = () => {
           )}
           {/* Загрози */}
           {threats.map((threat, index) => (
-            <Polygon
-              key={threat.id || `threat-${index}`}
-              positions={threat.coords}
-              pathOptions={{
-                color: previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
-                fillColor:
-                  previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
-                fillOpacity: 0.3,
-              }}
-              eventHandlers={{
-                click: () => !previewThreat && handleThreatClick(threat),
-              }}
-            />
+            <React.Fragment key={threat.id || `threat-${index}`}>
+              <Polygon
+                key={threat.id || `threat-${index}`}
+                positions={threat.coords.map(c => [c.lat, c.lng])}
+                pathOptions={{
+                  color: previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
+                  fillColor:
+                    previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
+                  fillOpacity: 0.3,
+                }}
+                eventHandlers={{
+                  click: () => !previewThreat && handleThreatClick(threat),
+                }}
+              />
+              {/* Маркери для вершин полігону з підказкою-тултіпом */}
+              {threat.coords.map((coord, i) => (
+                <Marker
+                  key={`threat-vertex-${threat.id}-${i}`}
+                  position={[coord.lat, coord.lng]}
+                  opacity={0} // маркер невидимий, але тултіп працює
+                >
+                  <Tooltip direction="top" offset={[0, 0]} opacity={1}>
+                    {coord.name
+                      ? `${coord.name}\n[${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}]`
+                      : `[${coord.lat.toFixed(6)}, ${coord.lng.toFixed(6)}]`}
+                  </Tooltip>
+                </Marker>
+              ))}
+            </React.Fragment>
           ))}
           {routePath.length > 0 && (
             <Polyline positions={routePath} pathOptions={{ color: 'blue', weight: 2 }} />
