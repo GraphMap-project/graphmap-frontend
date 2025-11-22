@@ -160,7 +160,25 @@ const ThreatRequestsPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container
+      maxWidth="lg"
+      sx={{
+        py: 2,
+        my: 2,
+        maxHeight: 'calc(100vh - 64px)',
+        overflowY: 'auto',
+        '&::-webkit-scrollbar': {
+          width: '10px',
+        },
+        '&::-webkit-scrollbar-thumb': {
+          background: 'linear-gradient(135deg, #1976d2 40%, #64b5f6 100%)',
+          borderRadius: '10px',
+        },
+        '&::-webkit-scrollbar-track': {
+          background: '#e3eafc',
+        },
+      }}
+    >
       <Typography variant="h4" gutterBottom>
         Запити на перевірку загроз
       </Typography>
