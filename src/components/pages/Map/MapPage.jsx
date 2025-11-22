@@ -95,6 +95,7 @@ const MapPage = () => {
         const mapped = data.map(t => ({
           id: t.id,
           coords: t.location,
+          type: t.type,
         }));
 
         // Якщо є previewThreat і його немає в списку - додаємо
@@ -597,25 +598,44 @@ const MapPage = () => {
           {/* Загрози */}
           {threats.map((threat, index) => (
             <React.Fragment key={threat.id || `threat-${index}`}>
-              <Polygon
-                key={threat.id || `threat-${index}`}
-                positions={threat.coords.map(c => [c.lat, c.lng])}
-                pathOptions={{
-                  color: previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
-                  fillColor:
-                    previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
-                  fillOpacity: 0.3,
-                }}
-                eventHandlers={{
-                  click: () => !previewThreat && handleThreatClick(threat),
-                }}
-              />
+              {threat.type === 'Polygon' && (
+                <Polygon
+                  key={threat.id || `threat-${index}`}
+                  positions={threat.coords.map(c => [c.lat, c.lng])}
+                  pathOptions={{
+                    color:
+                      previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
+                    fillColor:
+                      previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
+                    fillOpacity: 0.3,
+                  }}
+                  eventHandlers={{
+                    click: () => !previewThreat && handleThreatClick(threat),
+                  }}
+                />
+              )}
+
+              {threat.type === 'LineString' && (
+                <Polyline
+                  key={threat.id || `threat-${index}`}
+                  positions={threat.coords.map(c => [c.lat, c.lng])}
+                  pathOptions={{
+                    color:
+                      previewThreat && threat.id === previewThreat.id ? 'blue' : 'red',
+                    weight: 4,
+                  }}
+                  eventHandlers={{
+                    click: () => !previewThreat && handleThreatClick(threat),
+                  }}
+                />
+              )}
+
               {/* Маркери для вершин полігону з підказкою-тултіпом */}
               {threat.coords.map((coord, i) => (
                 <Marker
                   key={`threat-vertex-${threat.id}-${i}`}
                   position={[coord.lat, coord.lng]}
-                  opacity={0} // маркер невидимий, але тултіп працює
+                  opacity={0}
                 >
                   <Tooltip direction="top" offset={[0, 0]} opacity={1}>
                     {coord.name
