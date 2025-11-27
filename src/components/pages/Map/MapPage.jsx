@@ -206,6 +206,10 @@ const MapPage = () => {
             message: 'Запит на створення загрози відправлено на перевірку',
             severity: 'info',
           });
+
+          if (layer && typeof layer.remove === 'function') {
+            layer.remove();
+          }
         } else {
           setThreats(prev => [
             ...prev,
@@ -216,10 +220,6 @@ const MapPage = () => {
             message: 'Загрозу створено!',
             severity: 'success',
           });
-        }
-
-        if (layer && typeof layer.remove === 'function') {
-          layer.remove();
         }
       } catch (error) {
         if (layer && typeof layer.remove === 'function') {
@@ -661,12 +661,19 @@ const MapPage = () => {
                   circle: false,
                   circlemarker: false,
                   marker: false,
-                  polyline: true,
+                  polyline: {
+                    shapeOptions: {
+                      color: 'red',
+                      weight: 4,
+                    },
+                  },
                   polygon: {
                     allowIntersection: false,
                     showArea: false,
                     shapeOptions: {
                       color: 'red',
+                      fillColor: 'red',
+                      fillOpacity: 0.3,
                     },
                   },
                 }}
