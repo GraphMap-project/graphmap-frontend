@@ -1,11 +1,43 @@
-import { useMapEvents } from 'react-leaflet';
+import { useEffect, useState } from 'react';
+
+import { useMap, useMapEvents } from 'react-leaflet';
 
 import { checkIfInsideUkraine, checkIfWater } from './utils/geolocationUtils';
 
 const AddMarker = ({ onAddMarker, markers, intermediatePoints }) => {
-  // eslint-disable-next-line no-unused-vars
-  const map = useMapEvents({
+  const [isDrawingActive, setIsDrawingActive] = useState(false);
+  const map = useMap();
+
+  // Listen to Leaflet draw events directly
+  useEffect(() => {
+    const handleDrawStart = () => {
+      setIsDrawingActive(true);
+    };
+
+    const handleDrawStop = () => {
+      setIsDrawingActive(false);
+    };
+
+    map.on('draw:drawstart', handleDrawStart);
+    map.on('draw:drawstop', handleDrawStop);
+    map.on('draw:created', handleDrawStop);
+    map.on('draw:canceled', handleDrawStop);
+
+    return () => {
+      map.off('draw:drawstart', handleDrawStart);
+      map.off('draw:drawstop', handleDrawStop);
+      map.off('draw:created', handleDrawStop);
+      map.off('draw:canceled', handleDrawStop);
+    };
+  }, [map]);
+
+  useMapEvents({
     async click(e) {
+      // Don't add markers while drawing threats
+      if (isDrawingActive) {
+        return;
+      }
+
       const hasEmptyIntermediate = intermediatePoints.some(p => !p.lat || !p.lng);
       const canAddMarker = markers.length < 2 || hasEmptyIntermediate;
 
