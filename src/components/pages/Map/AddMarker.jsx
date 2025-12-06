@@ -20,13 +20,11 @@ const AddMarker = ({ onAddMarker, markers, intermediatePoints }) => {
     };
 
     map.on('draw:drawstart', handleDrawStart);
-    map.on('draw:drawstop', handleDrawStop);
     map.on('draw:created', handleDrawStop);
     map.on('draw:canceled', handleDrawStop);
 
     return () => {
       map.off('draw:drawstart', handleDrawStart);
-      map.off('draw:drawstop', handleDrawStop);
       map.off('draw:created', handleDrawStop);
       map.off('draw:canceled', handleDrawStop);
     };

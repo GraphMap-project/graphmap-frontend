@@ -57,6 +57,7 @@ const MapRefSetter = ({ mapRef }) => {
   useEffect(() => {
     mapRef.current = map;
   }, [map, mapRef]);
+
   return null;
 };
 
@@ -98,6 +99,14 @@ const MapPage = () => {
   // Save route dialog
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
 
+  // Polling state - for real-time threat updates
+  const threatsRef = useRef(threats);
+
+  // Keep threatsRef in sync
+  useEffect(() => {
+    threatsRef.current = threats;
+  }, [threats]);
+
   // Snackbar
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -105,8 +114,8 @@ const MapPage = () => {
     severity: 'success', // 'success' | 'error' | 'warning' | 'info'
   });
 
+  // Initial fetch of threats
   useEffect(() => {
-    // Завантажуємо всі загрози
     const fetchThreats = async () => {
       try {
         const data = await ThreatService.getAll();
@@ -137,6 +146,58 @@ const MapPage = () => {
       fetchThreats();
     }
   }, [selectedRoute, previewThreat]);
+
+  // Polling effect - оновлення загроз кожні 10 секунд
+  useEffect(() => {
+    // Не запускати polling якщо є selectedRoute
+    if (selectedRoute) return;
+
+    const pollThreats = async () => {
+      // Пропустити якщо будується маршрут
+      if (isLoading) {
+        return;
+      }
+
+      try {
+        const data = await ThreatService.getAll();
+        const mapped = data.map(t => ({
+          id: t.id,
+          coords: t.location,
+          type: t.type,
+        }));
+
+        // Порівняти з поточними даними (використовуємо ref для актуальних даних)
+        const currentIds = threatsRef.current
+          .map(t => t.id)
+          .sort()
+          .join(',');
+        const newIds = mapped
+          .map(t => t.id)
+          .sort()
+          .join(',');
+        const hasChanges = currentIds !== newIds;
+
+        if (hasChanges) {
+          // Додаємо previewThreat якщо є
+          let updatedThreats = mapped;
+          if (previewThreat) {
+            const exists = mapped.some(t => t.id === previewThreat.id);
+            if (!exists) {
+              updatedThreats = [...mapped, previewThreat];
+            }
+          }
+
+          setThreats(updatedThreats);
+        }
+      } catch (error) {
+        console.error('Помилка при polling загроз:', error);
+      }
+    };
+
+    const intervalId = setInterval(pollThreats, 15000); // Кожні 15 секунд
+
+    return () => clearInterval(intervalId);
+  }, [selectedRoute, isLoading, previewThreat]);
 
   useEffect(() => {
     if (selectedRoute) {
