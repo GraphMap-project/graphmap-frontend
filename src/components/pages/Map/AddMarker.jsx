@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useMap, useMapEvents } from 'react-leaflet';
 
@@ -7,6 +7,7 @@ import { checkIfInsideUkraine, checkIfWater } from './utils/geolocationUtils';
 const AddMarker = ({ onAddMarker, markers, intermediatePoints }) => {
   const [isDrawingActive, setIsDrawingActive] = useState(false);
   const map = useMap();
+  const skipNextClick = useRef(false);
 
   // Listen to Leaflet draw events directly
   useEffect(() => {
@@ -31,10 +32,29 @@ const AddMarker = ({ onAddMarker, markers, intermediatePoints }) => {
     };
   }, [map]);
 
+  // Listen for custom event to skip next click (fired when clicking threats)
+  useEffect(() => {
+    const handleSkipClick = () => {
+      skipNextClick.current = true;
+    };
+
+    map.on('threat:click', handleSkipClick);
+
+    return () => {
+      map.off('threat:click', handleSkipClick);
+    };
+  }, [map]);
+
   useMapEvents({
     async click(e) {
       // Don't add markers while drawing threats
       if (isDrawingActive) {
+        return;
+      }
+
+      // Skip this click if it was from a threat interaction
+      if (skipNextClick.current) {
+        skipNextClick.current = false;
         return;
       }
 

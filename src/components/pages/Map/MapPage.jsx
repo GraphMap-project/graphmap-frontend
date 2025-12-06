@@ -1,6 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
-import { MapContainer, Marker, Polygon, Polyline, TileLayer } from 'react-leaflet';
+import {
+  MapContainer,
+  Marker,
+  Polygon,
+  Polyline,
+  TileLayer,
+  useMap,
+} from 'react-leaflet';
 import { FeatureGroup, Tooltip } from 'react-leaflet';
 import { EditControl } from 'react-leaflet-draw';
 
@@ -44,10 +51,21 @@ const ukraineBounds = [
   [52.5, 40.2], // Northeast corner (latitude, longitude)
 ];
 
+// Helper component to capture map reference
+const MapRefSetter = ({ mapRef }) => {
+  const map = useMap();
+  useEffect(() => {
+    mapRef.current = map;
+  }, [map, mapRef]);
+  return null;
+};
+
 const MapPage = () => {
   const { coords, setStartCoords, setEndCoords, clearCoords } = useAppContext();
   const { selectedRoute, previewThreat, setPreviewThreat } = useRoute();
   const { user } = useAuth();
+
+  const mapRef = useRef(null);
 
   const [markers, setMarkers] = useState([]);
   // Point names
@@ -588,6 +606,7 @@ const MapPage = () => {
           maxBoundsViscosity={1.0}
           minZoom={6}
         >
+          <MapRefSetter mapRef={mapRef} />
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -631,7 +650,11 @@ const MapPage = () => {
                     fillOpacity: 0.3,
                   }}
                   eventHandlers={{
-                    click: () => !previewThreat && handleThreatClick(threat),
+                    click: e => {
+                      e.originalEvent.stopPropagation();
+                      mapRef.current?.fire('threat:click');
+                      if (!previewThreat) handleThreatClick(threat);
+                    },
                   }}
                 />
               )}
@@ -646,7 +669,11 @@ const MapPage = () => {
                     weight: 4,
                   }}
                   eventHandlers={{
-                    click: () => !previewThreat && handleThreatClick(threat),
+                    click: e => {
+                      e.originalEvent.stopPropagation();
+                      mapRef.current?.fire('threat:click');
+                      if (!previewThreat) handleThreatClick(threat);
+                    },
                   }}
                 />
               )}
