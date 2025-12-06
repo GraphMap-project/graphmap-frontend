@@ -228,9 +228,13 @@ const MapPage = () => {
             layer.remove();
           }
         } else {
+          // Remove the drawn layer since we'll render the threat from state
+          if (layer && typeof layer.remove === 'function') {
+            layer.remove();
+          }
           setThreats(prev => [
             ...prev,
-            { id: response.id, coords: locationWithNames }, // <-- тут має бути locationWithNames
+            { id: response.threat_id, coords: locationWithNames, type: type },
           ]);
           setSnackbar({
             open: true,
