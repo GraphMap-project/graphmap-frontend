@@ -142,10 +142,27 @@ const MapPage = () => {
         (selectedRoute.intermediate_points || []).map(([lat, lng]) => ({ lat, lng })),
       );
       // Set threats - виправлення: перетворюємо в правильний формат { id, coords }
-      const threatZones = (selectedRoute.threats || []).map((zone, index) => ({
-        id: `route-threat-${selectedRoute.id}-${index}`,
-        coords: zone,
-      }));
+      const threatZones = (selectedRoute.threats || []).map((zone, index) => {
+        // Перевіряємо, чи zone є масивом координат (полігоном)
+        let processedCoords = [];
+
+        if (Array.isArray(zone)) {
+          processedCoords = zone.map(point => {
+            // Якщо точка приходить як масив [lat, lng], конвертуємо в об'єкт
+            if (Array.isArray(point)) {
+              return { lat: point[0], lng: point[1] };
+            }
+            // Якщо це вже об'єкт {lat, lng} (на випадок змін на бекенді)
+            return point;
+          });
+        }
+
+        return {
+          id: `route-threat-${selectedRoute.id}-${index}`,
+          type: 'Polygon', // Оскільки бекенд не повертає тип, припускаємо Polygon
+          coords: processedCoords,
+        };
+      });
       setThreats(threatZones);
 
       // Set route path and distance

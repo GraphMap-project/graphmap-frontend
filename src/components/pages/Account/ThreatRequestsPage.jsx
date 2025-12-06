@@ -21,7 +21,7 @@ import ThreatService from '@/core/service/ThreatService';
 
 const ThreatRequestsPage = () => {
   const { user, loading: authLoading } = useAuth();
-  const { setPreviewThreat } = useRoute();
+  const { setPreviewThreat, setSelectedRoute } = useRoute();
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,6 +102,7 @@ const ThreatRequestsPage = () => {
   };
 
   const handlePreview = async request => {
+    setSelectedRoute(null);
     if (request.action === 'create' && request.location) {
       // Перетворюємо локацію в правильний формат для нової загрози
       const threat = {
